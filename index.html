@@ -103,7 +103,7 @@ input[type=date],select{flex:1;min-width:0;padding:12px;border:1px solid var(--l
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-var K="fib-lab-v3",T={GLU:["Glucosa","mg/dL",70,100],COL:["Colesterol total","mg/dL",0,200],TRI:["Triglicéridos","mg/dL",0,150],HEM:["Hemoglobina","g/dL",12,16],CRE:["Creatinina","mg/dL",.6,1.2],URE:["Urea","mg/dL",15,45]};
+var TX={},K="fib-lab-v3",T={GLU:["Glucosa","mg/dL",70,100],COL:["Colesterol total","mg/dL",0,200],TRI:["Triglicéridos","mg/dL",0,150],HEM:["Hemoglobina","g/dL",12,16],CRE:["Creatinina","mg/dL",.6,1.2],URE:["Urea","mg/dL",15,45]};
 var ST=["Recepción","Muestra","En tránsito","Procesamiento","Resultados listos"],TABS=["Inicio","Gestión","Recepción","Muestra","Transporte","Procesamiento","Resultados","Calidad","Catálogo","Incidencias","Indicadores","Verificar","Portal"];
 var DET=["Paciente registrado y orden generada","Muestra extraída y recibida","Muestra recibida en laboratorio","Procesamiento en equipo automatizado","Resultados validados por profesional"];
 var M={GLU:"enzimático GOD-PAP",COL:"enzimático CHOD-PAP",TRI:"enzimático GPO-PAP",HEM:"impedancia eléctrica y citometría de flujo",CRE:"Jaffé cinético",URE:"ureasa-GLDH"};
@@ -139,8 +139,8 @@ function nf(v){return String(v).replace(".",",")}
 function u(a){return a.filter(function(x,i){return a.indexOf(x)==i})}
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function ord(n){return "LAB-2026-"+("00000"+n).slice(-6)}
-function tubos(p){return u(p.t.map(function(c){return c=="HEM"?"EDTA K2 (tapa lila)":c=="GLU"?"Fluoruro de sodio (tapa gris)":"Gel separador (tapa amarilla)"})).join(" + ")}
-function ayu(p){return p.t.some(function(c){return"GLUCOLTRI".indexOf(c)>=0})?"Sí, 8 horas":"No requerido"}
+function tubos(p){return u(p.t.map(function(c){return TX[c]?TX[c].tb:c=="HEM"?"EDTA K2 (tapa lila)":c=="GLU"?"Fluoruro de sodio (tapa gris)":"Gel separador (tapa amarilla)"})).join(" + ")}
+function ayu(p){return p.t.some(function(c){return TX[c]?TX[c].ay:"GLUCOLTRI".indexOf(c)>=0})?"Sí, 8 horas":"No requerido"}
 function eqp(p){return u(p.t.map(function(c){return c=="HEM"?"Analizador hematológico automatizado":"Analizador bioquímico automatizado"})).join(" y ")}
 function step(p,k,t,x){var f=p.x,w;
 if(k==1){w=RS.tom[0];x=x||{};f[1]={tubo:tubos(p),ayuno:ayu(p),ayc:x.ayc||"Confirmado con el paciente",ext:t,rec:t+12*6e4,cond:x.cond||"Adecuada: volumen suficiente, sin hemólisis ni lipemia",resp:RS.rec[0],idv:x.idv!=null?x.idv:1,rot:x.rot!=null?x.rot:1,sitio:x.sitio||"Vena antecubital (pliegue del codo)",int:x.int||1,vol:x.vol||"4",obs:x.obs||"Sin incidentes durante la extracción"}}
@@ -226,7 +226,7 @@ h+='<div class="box search"><h3>🔍 Buscar por DNI, nombre u orden</h3><div cla
 h+='<div class="box"><div class="head"><b>Listado de pacientes</b><span>'+S.length+' pacientes</span></div>'+list(null)+'</div>';
 }else if(tab==1){
 h+=gest()+bk();
-h+='<div class="box"><h3>Registro de paciente</h3><div class="fld"><span>DNI (8 dígitos)</span><div class="row"><input type="text" id="fd" inputmode="numeric" maxlength="8"></div></div><div class="fld"><span>Apellidos y nombres</span><div class="row"><input type="text" id="fn"></div></div><div class="fld"><span>Teléfono celular</span><div class="row"><input type="tel" id="ft" inputmode="numeric" maxlength="11"></div></div><div class="fld"><span>Médico solicitante (nombre y CMP)</span><div class="row"><input type="text" id="fm" placeholder="Dr./Dra. … – CMP …"></div></div><div class="fld"><span>Procedencia</span><div class="row"><select id="fp"><option>Particular</option><option>Consultorio externo</option><option>Clínica</option><option>Hospital</option><option>Empresa / ocupacional</option></select></div></div><div class="fld"><span>Diagnóstico presuntivo o motivo (opcional)</span><div class="row"><input type="text" id="fx"></div></div><div class="fld"><span>Fecha de nacimiento</span><div class="row"><input type="date" id="fb"></div></div><div class="fld"><span>Sexo</span><div class="row"><select id="fs"><option value="">Seleccionar</option><option value="F">Femenino</option><option value="M">Masculino</option></select></div></div><details class="box" style="margin:8px 0"><summary><b>Consentimiento informado</b> (leer)</summary><div class="note">FIBONACCI Laboratorio Clínico tratará los datos personales y de salud del paciente solo para realizar los análisis, emitir y custodiar el informe y comunicarse con el paciente o su médico solicitante. Los datos son confidenciales. El paciente puede acceder a ellos, rectificarlos o pedir su eliminación conforme a ley. Los resultados solo se entregan al paciente o a quien él autorice.</div></details><label class="ck"><input type="checkbox" id="fc">El paciente leyó y aceptó el consentimiento informado y autoriza el tratamiento de sus datos personales de salud (Ley N.º 29733).</label><div class="fld"><span>N.º de orden de laboratorio (automático)</span><div class="row"><input type="text" value="'+ord(1040+S.length)+'" disabled></div></div><div class="fld"><span>Análisis solicitados</span>'+Object.keys(T).map(function(c){return '<label class="ck"><input type="checkbox" value="'+c+'">'+T[c][0]+'</label>'}).join("")+'</div><button class="btn" onclick="add()">Registrar en Recepción</button><div class="note" id="msg"></div></div>';
+h+='<div class="box"><h3>Registro de paciente</h3><div class="fld"><span>DNI (8 dígitos)</span><div class="row"><input type="text" id="fd" inputmode="numeric" maxlength="8"></div></div><div class="fld"><span>Apellidos y nombres</span><div class="row"><input type="text" id="fn"></div></div><div class="fld"><span>Teléfono celular</span><div class="row"><input type="tel" id="ft" inputmode="numeric" maxlength="11"></div></div><div class="fld"><span>Médico solicitante (nombre y CMP)</span><div class="row"><input type="text" id="fm" placeholder="Dr./Dra. … – CMP …"></div></div><div class="fld"><span>Procedencia</span><div class="row"><select id="fp"><option>Particular</option><option>Consultorio externo</option><option>Clínica</option><option>Hospital</option><option>Empresa / ocupacional</option></select></div></div><div class="fld"><span>Diagnóstico presuntivo o motivo (opcional)</span><div class="row"><input type="text" id="fx"></div></div><div class="fld"><span>Fecha de nacimiento</span><div class="row"><input type="date" id="fb"></div></div><div class="fld"><span>Sexo</span><div class="row"><select id="fs"><option value="">Seleccionar</option><option value="F">Femenino</option><option value="M">Masculino</option></select></div></div><details class="box" style="margin:8px 0"><summary><b>Consentimiento informado</b> (leer)</summary><div class="note">FIBONACCI Laboratorio Clínico tratará los datos personales y de salud del paciente solo para realizar los análisis, emitir y custodiar el informe y comunicarse con el paciente o su médico solicitante. Los datos son confidenciales. El paciente puede acceder a ellos, rectificarlos o pedir su eliminación conforme a ley. Los resultados solo se entregan al paciente o a quien él autorice.</div></details><label class="ck"><input type="checkbox" id="fc">El paciente leyó y aceptó el consentimiento informado y autoriza el tratamiento de sus datos personales de salud (Ley N.º 29733).</label><div class="fld"><span>N.º de orden de laboratorio (automático)</span><div class="row"><input type="text" value="'+ord(1040+S.length)+'" disabled></div></div><div class="fld"><span>Análisis solicitados</span>'+Object.keys(T).map(function(c){return '<label class="ck"><input type="checkbox" value="'+c+'">'+T[c][0]+'</label>'}).join("")+'</div>'+ntForm()+'<button class="btn" onclick="add()">Registrar en Recepción</button><div class="note" id="msg"></div></div>';
 }else if(tab==7){
 h+='<div class="grid"><div class="stat"><b>3/3</b><span>Equipos operativos</span></div><div class="stat"><b>4/4</b><span>Controles conformes</span></div><div class="stat"><b>'+audit().length+'</b><span>Registros auditoría</span></div></div>';
 h+='<div class="box"><h3>Equipos y mantenimiento</h3>'+EQ.map(function(e){return '<div class="card2"><b>'+e.n+'</b><div class="kv"><span>Modelo</span><div>'+e.mod+' · '+e.cod+'</div><span>Estado</span><div><span class="chip okc" style="margin:0">Operativo</span></div><span>Mantenimiento</span><div>'+e.mant+'</div><span>Último</span><div>'+e.ult+'</div><span>Próximo</span><div>'+e.prox+'</div><span>Responsable</span><div>'+e.resp+'</div></div></div>'}).join("")+'</div>';
@@ -301,6 +301,43 @@ var CS,SR={HEM:{F:[12,16],M:[13.5,17.5]},CRE:{F:[.5,1.1],M:[.7,1.3]}};
 Object.keys(SR).forEach(function(c){var o=[T[c][2],T[c][3]];[2,3].forEach(function(k){Object.defineProperty(T[c],k,{get:function(){var r=SR[c][CS];return r?r[k-2]:o[k-2]},configurable:true})})});
 var LAB={dir:"[Dirección del laboratorio]",tel:"[Teléfono]",ruc:"[RUC]"};
 var CR={GLU:[50,400],COL:[null,400],TRI:[null,500],HEM:[7,20],CRE:[null,4],URE:[null,150]},CAT={GLU:2,COL:2,TRI:2,HEM:1,CRE:3,URE:3},cq="";
+try{TX=JSON.parse(localStorage.getItem(K+"-tests"))||{}}catch(e){TX={}}
+Object.keys(TX).forEach(function(c){var x=TX[c];T[c]=[x.n,x.u,x.lo,x.hi];M[c]=x.m;CR[c]=[x.cl,x.ch];CAT[c]=x.h});
+function saveT(){try{localStorage.setItem(K+"-tests",JSON.stringify(TX))}catch(e){}}
+function ntForm(){return '<details class="box" style="margin:8px 0" id="ntd"><summary><b>➕ Agregar análisis nuevo a la lista</b></summary>'
++'<div class="fld"><span>Nombre del análisis</span><div class="row"><input type="text" id="nt_n" placeholder="Ej: Ácido úrico"></div></div>'
++'<div class="fld"><span>Código (opcional, máx. 6 letras o números)</span><div class="row"><input type="text" id="nt_c" maxlength="6" placeholder="Se genera solo si lo dejas vacío"></div></div>'
++'<div class="fld"><span>Unidad</span><div class="row"><input type="text" id="nt_u" placeholder="mg/dL"></div></div>'
++'<div class="fld"><span>Referencia: valor mínimo (vacío si solo hay máximo)</span><div class="row"><input type="text" id="nt_lo" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Referencia: valor máximo</span><div class="row"><input type="text" id="nt_hi" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Método</span><div class="row"><input type="text" id="nt_m" placeholder="Ej: uricasa-peroxidasa"></div></div>'
++'<div class="fld"><span>Tubo</span><div class="row"><select id="nt_tb"><option>Gel separador (tapa amarilla)</option><option>EDTA K2 (tapa lila)</option><option>Fluoruro de sodio (tapa gris)</option><option>Heparina de litio (tapa verde)</option></select></div></div>'
++'<div class="fld"><span>Ayuno</span><div class="row"><select id="nt_ay"><option value="0">No requerido</option><option value="1">Sí, 8 horas</option></select></div></div>'
++'<div class="fld"><span>Tiempo de entrega (horas)</span><div class="row"><input type="number" id="nt_h" min="1" max="72" value="2"></div></div>'
++'<div class="fld"><span>Valor crítico: menor que (opcional)</span><div class="row"><input type="text" id="nt_cl" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Valor crítico: mayor que (opcional)</span><div class="row"><input type="text" id="nt_ch" inputmode="decimal"></div></div>'
++'<button class="btn sec" type="button" onclick="addT()">Guardar análisis</button><div class="note" id="ntm"></div></details>'}
+function addT(){if(!can("add"))return;
+var g=function(i){return document.getElementById(i).value.trim().replace(",",".")},m=document.getElementById("ntm"),
+n=document.getElementById("nt_n").value.trim(),un=document.getElementById("nt_u").value.trim(),me=document.getElementById("nt_m").value.trim(),
+c=g("nt_c").toUpperCase().replace(/[^A-Z0-9]/g,""),lo=g("nt_lo"),hi=g("nt_hi"),cl=g("nt_cl"),ch=g("nt_ch"),h=parseInt(g("nt_h"),10);
+if(!n){m.textContent="Escribe el nombre del análisis.";return}
+if(!un){m.textContent="Indica la unidad (ej. mg/dL).";return}
+if(hi===""||isNaN(+hi)){m.textContent="Indica el valor máximo de referencia (número).";return}
+if(lo!==""&&(isNaN(+lo)||+lo>=+hi)){m.textContent="El mínimo debe ser un número menor que el máximo.";return}
+if((cl!==""&&isNaN(+cl))||(ch!==""&&isNaN(+ch))){m.textContent="Los valores críticos deben ser números.";return}
+if(!(h>=1&&h<=72)){m.textContent="El tiempo de entrega debe estar entre 1 y 72 horas.";return}
+if(Object.keys(T).some(function(k){return T[k][0].toLowerCase()==n.toLowerCase()})){m.textContent="Ya existe un análisis con ese nombre.";return}
+if(!c){c=n.toUpperCase().normalize("NFD").replace(/[^A-Z]/g,"").slice(0,3)||"EXA"}
+var b=c,i=2;while(T[c]){c=b.slice(0,5)+i;i++}
+TX[c]={n:n,u:un,lo:lo===""?0:+lo,hi:+hi,m:me||"Según técnica del laboratorio",tb:document.getElementById("nt_tb").value,ay:document.getElementById("nt_ay").value=="1",h:h,cl:cl===""?null:+cl,ch:ch===""?null:+ch};
+var x=TX[c];T[c]=[x.n,x.u,x.lo,x.hi];M[c]=x.m;CR[c]=[x.cl,x.ch];CAT[c]=x.h;saveT();
+var ids=["fd","fn","ft","fm","fp","fx","fb","fs"],keep={};ids.forEach(function(k){keep[k]=document.getElementById(k).value});
+var fc=document.getElementById("fc").checked,sel=[].slice.call(document.querySelectorAll("#app input[type=checkbox]:checked")).map(function(e){return e.value}).filter(Boolean);
+render();
+ids.forEach(function(k){document.getElementById(k).value=keep[k]});document.getElementById("fc").checked=fc;
+sel.push(c);[].slice.call(document.querySelectorAll("#app input[type=checkbox]")).forEach(function(e){if(sel.indexOf(e.value)>=0)e.checked=true});
+toast("✅ Análisis «"+n+"» agregado (código "+c+") y marcado en la lista.")}
 var TIPOS=["Muestra rechazada o hemolizada","Error de identificación","Falla de equipo","Retraso en entrega","Control de calidad fuera de rango","Resultado crítico","Otro"];
 var INC;try{INC=JSON.parse(localStorage.getItem(K+"-inc"))}catch(e){}
 if(!Array.isArray(INC))INC=[{id:1,t:D0+30*6e4,tipo:"Muestra rechazada o hemolizada",area:"Recepción",ord:"",desc:"Tubo con hemólisis visible; se solicitó nueva extracción.",acc:"Nueva toma realizada y registrada.",resp:RS.rec[0],est:"Cerrada",cer:D0+75*6e4}];
