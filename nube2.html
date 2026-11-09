@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FIBONACCI · Laboratorio Clínico</title>
+<style>
+:root{--bg:#f1f4fb;--card:#fff;--tx:#16213a;--mut:#5b6785;--pri:#1d4ed8;--line:#dbe1ef;--ok:#d6f5e3;--okt:#0b6b3a;--bad:#fde1e1;--badt:#a11b1b;--warn:#fff2cc;--warnt:#8a5a00;--inf:#dcecff;--inft:#1c4f9c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--card:#16223a;--tx:#e6ecf8;--mut:#9fb0cf;--pri:#8ab4ff;--line:#273655;--ok:#12392a;--okt:#7ee2ae;--bad:#4a1d1d;--badt:#ffb4b4;--warn:#43360e;--warnt:#ffd77a;--inf:#16314f;--inft:#9cc8ff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1626;--card:#16223a;--tx:#e6ecf8;--mut:#9fb0cf;--pri:#8ab4ff;--line:#273655;--ok:#12392a;--okt:#7ee2ae;--bad:#4a1d1d;--badt:#ffb4b4;--warn:#43360e;--warnt:#ffd77a;--inf:#16314f;--inft:#9cc8ff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;padding:18px 16px;display:flex;gap:14px;align-items:center}
+header h1{margin:0;font-size:24px;letter-spacing:.18em}
+header small{display:block;letter-spacing:.2em;font-size:11px;opacity:.9}
+nav{display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line);scrollbar-width:none}
+nav button{flex:none;padding:14px 15px;background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);font:600 15px inherit;font-family:inherit}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{max-width:720px;margin:0 auto;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center}
+.stat b{display:block;font-size:28px;color:var(--pri)}
+.stat span{color:var(--mut);font-size:12.5px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+.search{border:2px solid var(--pri)}
+.box h3{margin:0 0 10px;font-size:17px;color:var(--pri)}
+.row{display:flex;gap:8px}
+input[type=text],input[type=number],input[type=tel]{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--tx);font:inherit}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:12px;padding:12px 18px;font:700 15px inherit;font-family:inherit}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.sec):not(.cl){color:#0a1530}}
+:root[data-theme="dark"] .btn:not(.sec):not(.cl){color:#0a1530}
+.btn.cl{background:#475569;color:#fff;border:0}
+.btn.sec{background:none;color:var(--tx);border:1.5px solid var(--mut);padding:8px 14px}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.head b{font-size:18px}.head span{color:var(--mut);font-size:14px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.dni{font-weight:700}
+.tests{color:var(--pri);font-size:13px}
+.chip{display:inline-block;border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:700;margin:4px 6px 0 0}
+.s0{background:var(--warn);color:var(--warnt)}.s1{background:var(--inf);color:var(--inft)}.s2{background:#ece3ff;color:#5b34b0}.s3{background:#ffe6d1;color:#9a4a00}.s4,.okc{background:var(--ok);color:var(--okt)}
+.risk{background:var(--bad);color:var(--badt)}
+.empty{color:var(--mut);padding:18px 0;text-align:center}
+label.ck{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0}
+.fld{margin-bottom:12px}.fld>span{display:block;font-size:13px;color:var(--mut);margin-bottom:4px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:9}
+#modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:720px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet h2{margin:0 0 2px;font-size:20px}
+.steps{display:flex;gap:4px;margin:14px 0 8px}
+.steps i{flex:1;height:6px;border-radius:9px;background:var(--line)}.steps i.on{background:var(--pri)}
+.tblw{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-size:12.5px}
+td.hi{color:var(--badt);font-weight:700}
+.sec{margin-top:16px}.sec h4{margin:0 0 6px;font-size:12.5px;color:var(--pri);text-transform:uppercase;letter-spacing:.06em}
+.kv{display:grid;grid-template-columns:128px 1fr;gap:5px 10px;font-size:14px}.kv span{color:var(--mut)}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.tl div{margin-bottom:10px;font-size:13.5px;position:relative}
+.tl div::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--pri)}
+.tl small{color:var(--mut);display:block}
+.card2{border-top:1px solid var(--line);padding:12px 0}.card2 b{display:block;margin-bottom:6px}
+.rsp{background:var(--ok);border:1px solid var(--okt);border-radius:14px;padding:12px;font-size:14px}.rsp h4{font-size:15px}.rsp div{margin-bottom:4px}
+.bar{display:grid;grid-template-columns:125px 1fr 24px;align-items:center;gap:8px;font-size:14px;margin:8px 0}.tr{background:var(--line);border-radius:9px}.tr i{display:block;height:10px;border-radius:9px;background:var(--pri)}.bar b{text-align:right}
+.alert{border-radius:12px;padding:12px;font-weight:700;margin-top:12px;border:1px solid}.alert.bad{background:var(--bad);color:var(--badt);border-color:var(--badt)}.alert.good{background:var(--ok);color:var(--okt);border-color:var(--okt)}.btn.ok{background:#059669;color:#fff!important}#am{white-space:pre-wrap}
+.note{font-size:12px;color:var(--mut);margin-top:12px}
+.acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+input[type=date],select{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--tx);font:inherit}
+.rep{--tx:#111;--mut:#555;--line:#ccc;--pri:#1d4ed8;--bad:#fde1e1;--badt:#a11b1b;--ok:#d6f5e3;--okt:#0b6b3a;background:#fff;color:#111;padding:14px;border-radius:10px}
+.mh{display:flex;gap:12px;align-items:center;border-bottom:3px solid #1d4ed8;padding-bottom:10px}.mt{flex:1}.mt b{display:block;font-size:22px;letter-spacing:.16em;color:#1d4ed8}.mt small{display:block;font-size:11.5px;color:#555}
+.qr{width:84px;height:84px}.qr svg{width:100%;height:100%}
+.rt{text-align:center;font-size:16px;letter-spacing:.1em;margin:14px 0 0}
+.fm{display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;gap:10px}.sg{flex:1;text-align:center}.sg .ln{border-top:1px solid #111;margin-bottom:4px}.sg small{display:block;font-size:12px;color:#555}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes dr{to{stroke-dashoffset:0}}
+.cert{background:linear-gradient(145deg,#0b1d4a,#1e3a8a 55%,var(--c1));color:#fff;border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(11,29,74,.35)}
+.cert small{display:block;font-size:10.5px;letter-spacing:.14em;opacity:.75}.cert b{display:block}
+.ct{display:flex;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.18)}.ct b{font-size:19px;letter-spacing:.06em}.ct span{font-size:12.5px;opacity:.85}
+.cp{font-size:34px;font-weight:800;line-height:1}.cp small{display:inline;font-size:15px;letter-spacing:0}
+.ck{stroke-dasharray:40;stroke-dashoffset:40;animation:dr .9s .3s forwards}
+.cr{margin:14px 0 6px}.cn{display:flex;gap:12px;position:relative;padding-bottom:14px;animation:fu .5s both}
+.cn::before{content:"";position:absolute;left:17px;top:38px;bottom:2px;width:2px;background:rgba(255,255,255,.3)}.cn:last-child{padding-bottom:0}.cn:last-child::before{display:none}
+.cb{flex:none;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c2));border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.cn b{font-size:15px}.cn span{display:block;font-size:13px;opacity:.9}.cn small{letter-spacing:0;font-size:12px}
+.cc{display:inline-block;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.14);font-size:12.5px;margin:6px 6px 0 0}.cc.no{background:#dc2626}
+.cf{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18)}.cf b{font-size:15px;letter-spacing:.08em}.cf span{font-size:12px;opacity:.8}
+#lg{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}.lgc{width:100%;max-width:420px}body.pac #tabs{display:none}
+#toast{display:none;position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#111;color:#fff;padding:12px 14px;border-radius:12px;z-index:40;font-size:14px}
+#proj{position:fixed;inset:0;z-index:20;background:var(--bg);color:var(--tx);padding:calc(14px + env(safe-area-inset-top,0px)) 18px 18px;overflow:auto}
+.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+#proj .stat b{font-size:clamp(30px,7vw,64px)}#proj .stat span{font-size:clamp(14px,2vw,22px)}#proj .pq{font-size:clamp(16px,2.4vw,26px)}#proj .bar{font-size:clamp(15px,2.2vw,24px);grid-template-columns:32% 1fr 40px}#proj .tr i{height:18px}
+@media print{header,nav,main,.acts,#proj{display:none!important}body{background:#fff}#modal{position:static;background:none;display:block}.sheet{max-height:none;border-radius:0;background:#fff;padding:0}.rep{padding:0}}
+
+</style>
+</head>
+<body>
+<header>
+<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><rect x="2" y="2" width="48" height="48" rx="12" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/><rect x="11" y="11" width="13" height="10" rx="3" fill="#fff"/><rect x="11" y="25" width="13" height="14" rx="3" fill="#fff" fill-opacity=".6"/><rect x="28" y="11" width="13" height="28" rx="3" fill="#fff"/></svg>
+<div><h1>FIBONACCI</h1><small>LABORATORIO CLÍNICO</small></div>
+</header>
+<nav id="tabs"></nav>
+<main id="app"></main>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+var TX={},K="fib-lab-nube",T={GLU:["Glucosa","mg/dL",70,100],COL:["Colesterol total","mg/dL",0,200],TRI:["Triglicéridos","mg/dL",0,150],HEM:["Hemoglobina","g/dL",12,16],CRE:["Creatinina","mg/dL",.6,1.2],URE:["Urea","mg/dL",15,45]};
+var ST=["Recepción","Muestra","En tránsito","Procesamiento","Resultados listos"],TABS=["Inicio","Gestión","Recepción","Muestra","Transporte","Procesamiento","Resultados","Calidad","Catálogo","Incidencias","Indicadores","Verificar","Portal"];
+var DET=["Paciente registrado y orden generada","Muestra extraída y recibida","Muestra recibida en laboratorio","Procesamiento en equipo automatizado","Resultados validados por profesional"];
+var M={GLU:"enzimático GOD-PAP",COL:"enzimático CHOD-PAP",TRI:"enzimático GPO-PAP",HEM:"impedancia eléctrica y citometría de flujo",CRE:"Jaffé cinético",URE:"ureasa-GLDH"};
+var RS={ges:["Doris Reynoso Mariano","7463402"],rec:["George Rivera Simon","60442794"],tom:["Kelvin Chávez Evangelista","70788481"],log:["Yuli Diego Trinidad","70614008"],res:["Yuli Diego Trinidad","70614008"]};
+var VAL={nom:RS.res[0],col:"DNI "+RS.res[1]};
+var EQ=[
+{n:"Analizador hematológico automatizado",mod:"Sysmex XN-550",cod:"EQ-HEM-01",mant:"Preventivo",ult:"15/10/2026",prox:"15/01/2027",tm:new Date(2026,9,15,9).getTime(),resp:RS.ges[0]},
+{n:"Analizador bioquímico automatizado",mod:"Mindray BS-240",cod:"EQ-BQ-01",mant:"Preventivo",ult:"12/10/2026",prox:"12/01/2027",tm:new Date(2026,9,12,9).getTime(),resp:RS.ges[0]},
+{n:"Centrífuga",mod:"Hettich EBA 20",cod:"EQ-CEN-01",mant:"Calibración de velocidad y limpieza",ult:"28/09/2026",prox:"28/12/2026",tm:new Date(2026,8,28,9).getTime(),resp:RS.ges[0]}];
+var D0=new Date();D0.setHours(7,30,0,0);if(D0>Date.now())D0.setDate(D0.getDate()-1);D0=D0.getTime();
+var CI=[
+{p:"Hemoglobina",lote:"HEM-N-2610",obt:"13,9 g/dL",cri:"14,0 ± 0,5 g/dL (±2 DE)",t:D0},
+{p:"Leucocitos",lote:"HEM-N-2610",obt:"7,8 ×10³/µL",cri:"7,6 ± 0,6 ×10³/µL (±2 DE)",t:D0+4*6e4},
+{p:"Glucosa",lote:"BQ-N-2609",obt:"98 mg/dL",cri:"100 ± 6 mg/dL (±2 DE)",t:D0+15*6e4},
+{p:"Colesterol",lote:"BQ-N-2609",obt:"201 mg/dL",cri:"200 ± 10 mg/dL (±2 DE)",t:D0+19*6e4}];
+var seed=[
+["45678912","García López, María Elena","987 654 321",["GLU","COL","TRI"],4,{GLU:126,COL:238,TRI:182}],
+["71234567","Rodríguez Pérez, Juan Carlos","954 218 760",["GLU","COL","TRI"],4,{GLU:92,COL:185,TRI:120}],
+["40123456","Quispe Huamán, Rosa","962 331 045",["HEM","CRE"],0,{}],
+["43219876","Mamani Condori, Luis","931 782 604",["GLU"],1,{}],
+["46781234","Flores Rojas, Ana Lucía","976 540 318",["COL","TRI"],2,{}],
+["70456123","Torres Vega, Carlos","948 123 667",["GLU","CRE","URE"],4,{GLU:88,CRE:.9,URE:32}],
+["41987654","Ramos Díaz, Elena","913 604 295",["HEM"],4,{HEM:10.8}],
+["72345098","Castillo Ruiz, Pedro","985 470 123",["GLU","COL"],3,{}],
+["44556677","Huamán Salas, Teresa","921 889 054",["CRE","URE"],4,{CRE:1.4,URE:52}],
+["47890123","Vargas León, Miguel","967 305 841",["GLU","TRI"],4,{GLU:84,TRI:110}]];
+var MD=[["Dra. Patricia Salazar Ramos – CMP 45812","Consultorio externo","Control de diabetes mellitus tipo 2"],["Dr. Jorge Medina Cruz – CMP 38201","Particular","Chequeo preventivo"],["Dra. Lucía Paredes Vela – CMP 52077","Clínica","Anemia en estudio"],["Dr. Jorge Medina Cruz – CMP 38201","Particular","Control de glucosa"],["Dra. Patricia Salazar Ramos – CMP 45812","Consultorio externo","Dislipidemia"],["Dr. Raúl Chávez Ponce – CMP 41930","Hospital","Control de función renal"],["Dra. Lucía Paredes Vela – CMP 52077","Clínica","Control de anemia"],["Dr. Raúl Chávez Ponce – CMP 41930","Hospital","Chequeo preoperatorio"],["Dr. Raúl Chávez Ponce – CMP 41930","Hospital","Control de función renal"],["Dr. Jorge Medina Cruz – CMP 38201","Particular","Chequeo ocupacional"]];
+var SD=[["1978-03-14","F"],["1985-07-02","M"],["1990-11-23","F"],["1972-01-30","M"],["1995-05-18","F"],["1968-09-09","M"],["1983-12-04","F"],["1979-06-27","M"],["1960-02-11","F"],["1992-08-15","M"]];
+var S,tab=0,q="";
+function p2(n){return("0"+n).slice(-2)}
+function fmt(m){var d=new Date(m);return p2(d.getDate())+"/"+p2(d.getMonth()+1)+"/"+d.getFullYear()+" "+p2(d.getHours())+":"+p2(d.getMinutes())}
+function nf(v){return String(v).replace(".",",")}
+function u(a){return a.filter(function(x,i){return a.indexOf(x)==i})}
+function esc(x){return String(x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function ord(n){return "LAB-2026-"+("00000"+n).slice(-6)}
+function tubos(p){return u(p.t.map(function(c){return TX[c]?TX[c].tb:c=="HEM"?"EDTA K2 (tapa lila)":c=="GLU"?"Fluoruro de sodio (tapa roja)":"Gel separador (tapa amarilla)"})).join(" + ")}
+function ayu(p){return p.t.some(function(c){return TX[c]?TX[c].ay:"GLUCOLTRI".indexOf(c)>=0})?"Sí, 8 horas":"No requerido"}
+function eqp(p){return u(p.t.map(function(c){return c=="HEM"?"Analizador hematológico automatizado":"Analizador bioquímico automatizado"})).join(" y ")}
+function step(p,k,t,x){var f=p.x,w;
+if(k==1){w=RS.tom[0];x=x||{};f[1]={tubo:tubos(p),ayuno:ayu(p),ayc:x.ayc||"Confirmado con el paciente",ext:t,rec:t+12*6e4,cond:x.cond||"Adecuada: volumen suficiente, sin hemólisis ni lipemia",resp:RS.rec[0],idv:x.idv!=null?x.idv:1,rot:x.rot!=null?x.rot:1,sitio:x.sitio||"Vena antecubital (pliegue del codo)",int:x.int||1,vol:x.vol||"4",obs:x.obs||"Sin incidentes durante la extracción"}}
+if(k==2){w=RS.log[0];f[2]={temp:nf((3.8+Math.random()*2.4).toFixed(1))+" °C",integ:"Íntegra, tubos rotulados y sin derrames",rec:t,obs:"Cadena de frío conservada (2–8 °C)",resp:w}}
+if(k==3){w=RS.res[0];f[3]={met:p.t.map(function(c){return T[c][0]+": "+M[c]}).join("; "),eq:eqp(p),fecha:t,ci:"Conforme",resp:w}}
+if(k==4){w=x.nom;f[4]={nom:x.nom,col:x.col,fecha:t};p.v=x.v}
+p.s=k;p.h.push([t,ST[k],DET[k],w])}
+function mk(r,i){var p={d:r[0],n:r[1],tel:r[2],ord:ord(1040+i),t:r[3],s:0,v:{},x:{},h:[],demo:1},t=Date.now()-(i*38+300)*6e4;
+p.h.push([t,ST[0],DET[0],RS.rec[0]]);
+for(var k=1;k<=r[4];k++){t+=[22,35,48,60][k-1]*6e4;step(p,k,t,{nom:VAL.nom,col:VAL.col,v:r[5]})}
+p.nac=SD[i][0];p.sx=SD[i][1];p.cons={t:p.h[0][0],by:RS.rec[0]};p.med=MD[i][0];p.pro=MD[i][1];p.dx=MD[i][2];return p}
+try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!Array.isArray(S))S=seed.map(mk);
+try{var MIG=0;S.forEach(function(p){if(p&&p.x)for(var k in p.x){var q=p.x[k];if(q&&typeof q.tubo=="string"&&q.tubo.indexOf("tapa gris")>-1){q.tubo=q.tubo.replace(/tapa gris/g,"tapa roja");MIG=1}}});if(MIG){window.__mig=1;localStorage.setItem(K,JSON.stringify(S))}}catch(e){}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function out(c,v){var t=T[c];return v<t[2]||v>t[3]}
+function risk(p){CS=p.sx;return p.s==4&&p.t.some(function(c){return p.v[c]!=null&&out(c,p.v[c])})}
+function cnt(s){return S.filter(function(p){return p.s==s}).length}
+function audit(){var a=[];S.forEach(function(p){p.h.forEach(function(e){a.push([e[0],e[1],e[2]+" · "+p.ord,e[3]])})});
+CI.forEach(function(c){a.push([c.t,"Control de calidad","Control interno de "+c.p.toLowerCase()+": conforme",RS.res[0]])});
+EQ.forEach(function(e){a.push([e.tm,"Mantenimiento",e.mant+" · "+e.n,e.resp])});
+INC.forEach(function(x){a.push([x.t,"Incidencia",x.tipo+": "+x.desc,x.resp])});
+return a.sort(function(x,y){return y[0]-x[0]})}
+function tl(a){return '<div class="tl">'+a.map(function(e){return '<div><b>'+esc(e[1])+'</b> · '+esc(e[2])+'<small>'+fmt(e[0])+' · '+esc(e[3])+'</small></div>'}).join("")+'</div>'}
+function kv(t,a){return '<div class="sec"><h4>'+t+'</h4><div class="kv">'+a.map(function(r){return '<span>'+r[0]+'</span><div>'+esc(r[1])+'</div>'}).join("")+'</div></div>'}
+var INS=[["Tubo EDTA K2 (tapa lila)",86,50],["Tubo con gel separador (tapa amarilla)",142,80],["Tubo fluoruro de sodio (tapa roja)",34,40],["Sistema de extracción al vacío",210,100],["Reactivo de glucosa (determinaciones)",640,200],["Reactivo de colesterol (determinaciones)",520,200]];
+var SLA=[60,180],AC,LL=-1,SND=true;try{SND=localStorage.getItem(K+"-snd")!="0"}catch(e){}
+function beep(){if(!SND)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=="suspended")AC.resume();[880,660].forEach(function(f,k){var o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+k*.22;o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.25,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.21)})}catch(e){}}
+function snd(){SND=!SND;try{localStorage.setItem(K+"-snd",SND?"1":"0")}catch(e){}if(SND)beep();render()}
+setInterval(function(){if(!CU||CU.r=="pac")return;var l=late();if(l>LL){var e=document.activeElement;if(!e||!/INPUT|TEXTAREA|SELECT/.test(e.tagName))render();else{beep();LL=l}}},6e4);
+function wt(p){return(Date.now()-p.x[4].fecha)/6e4}
+function lvl(p){var m=wt(p);return m>=SLA[1]?2:m>=SLA[0]?1:0}
+function late(){return S.filter(function(p){return p.s==4&&!p.ent&&lvl(p)==2}).length}
+function avi(i){if(!can("avi"))return;var p=S[i],nm=(p.n.split(",")[1]||p.n).trim(),tx="*FIBONACCI · Laboratorio Clínico*\nHola, "+nm+". Tu informe de laboratorio ("+p.ord+") ya está listo y aún no lo has recibido. Puedes recogerlo en el laboratorio o pedirnos que te lo enviemos.",n=Date.now();
+try{window.open("https://wa.me/51"+p.tel.replace(/\D/g,"")+"?text="+encodeURIComponent(tx),"_blank")}catch(e){}
+p.av=(p.av||0)+1;p.la=n;p.h.push([n,"Aviso","Recordatorio de entrega enviado por WhatsApp",CU.n]);save();render();toast("Recordatorio registrado para "+p.ord)}
+function ale(){var hoy=new Date().toDateString(),L=[],tot=S.filter(function(p){return p.s==4}).length,eh=S.filter(function(p){return p.ent&&new Date(p.ent).toDateString()==hoy}).length;
+S.forEach(function(p,i){if(p.s==4&&!p.ent)L.push([p,i])});
+L.sort(function(a,b){return(critp(b[0])?1:0)-(critp(a[0])?1:0)||wt(b[0])-wt(a[0])});
+var lt=late(),pc=tot?Math.round((tot-L.length)/tot*100):0,h='<div class="box"><h3>Entregas del día</h3><div class="grid"><div class="stat"><b>'+eh+'</b><span>Entregados hoy</span></div><div class="stat"><b>'+L.length+'</b><span>Sin entregar</span></div><div class="stat"><b style="color:'+(lt?"#ef4444":"inherit")+'">'+lt+'</b><span>Más de '+SLA[1]/60+' h</span></div></div><div class="bar" style="margin-top:10px"><span>Avance</span><div class="tr"><i style="width:'+pc+'%"></i></div><b>'+pc+'%</b></div>';
+if(!L.length)return h+'<div class="empty">Todos los informes fueron entregados. ✔</div></div>';
+h+=(lt?'<div class="alert bad">⏰ '+lt+' informe(s) llevan más de '+SLA[1]/60+' h sin entregarse al paciente.</div>':'')+L.map(function(a){var p=a[0],i=a[1],l=lvl(p),c=["okc","","risk"][l],st=l==2?"Retrasado":l==1?"Por vencer":"En plazo";
+return'<div class="card2"><b>'+esc(p.n)+'</b> <span class="chip '+c+'" style="margin:0 0 0 6px'+(l==1?';background:#f59e0b;color:#1a1200':'')+'">'+st+'</span>'+(critp(p)?'<span class="chip risk">🚨 Crítico</span>':'')+'<div class="tests">'+p.ord+' · listo hace '+hm(wt(p))+(p.av?' · avisos: '+p.av+' (último '+fmt(p.la)+')':'')+'</div><div class="row" style="margin-top:6px"><button class="btn sec" onclick="avi('+i+')">📲 Recordar al paciente</button><button class="btn" onclick="ent('+i+')">Marcar entregado</button></div></div>'}).join("")+'</div>';return h}
+function gest(){
+var r=S.filter(function(p){return p.s==4}),pe=r.filter(function(p){return!p.ent}),rk=r.filter(risk).length,pr=S.filter(function(p){return p.s>0&&p.s<4}).length;
+var av=r.length?Math.round(r.reduce(function(a,p){return a+p.x[4].fecha-p.h[0][0]},0)/r.length/6e4):0;
+var h='<div class="grid">'+[[S.length,"Órdenes"],[pr,"En proceso"],[r.length,"Con resultado"],[pe.length,"Por entregar"],[r.length-pe.length,"Entregados"],[rk,"Con riesgo"]].map(function(a){return '<div class="stat"><b>'+a[0]+'</b><span>'+a[1]+'</span></div>'}).join("")+'</div>';
+h+=ale();
+h+='<div class="box"><h3>Resumen de gestión</h3><div class="kv"><span>Tiempo medio</span><div>'+Math.floor(av/60)+' h '+av%60+' min (registro a resultado)</div><span>Última actividad</span><div>'+fmt(audit()[0][0])+'</div><span>Responsable</span><div>'+RS.ges[0]+'</div></div></div>';
+h+='<div class="box"><h3>Exámenes solicitados</h3>'+Object.keys(T).map(function(c){var n=S.filter(function(p){return p.t.indexOf(c)>=0}).length;return '<div class="bar"><span>'+T[c][0]+'</span><div class="tr"><i style="width:'+Math.round(n/S.length*100)+'%"></i></div><b>'+n+'</b></div>'}).join("")+'</div>';
+var pd=[];pe.forEach(function(p){pd.push((risk(p)?"⚠ ":"")+"Entregar informe de "+p.n)});
+S.forEach(function(p){if(p.s==2)pd.push("Confirmar recepción en laboratorio: "+p.n);if(p.s==3)pd.push("Procesamiento en curso: "+p.n)});
+pd.push("Reponer tubos de fluoruro de sodio (stock bajo)","Mantenimiento de centrífuga programado: 28/12/2026");
+h+='<div class="box"><h3>Pendientes del día</h3>'+pd.slice(0,10).map(function(x){return '<div class="card2" style="padding:8px 0">'+esc(x)+'</div>'}).join("")+'</div>';
+h+='<div class="box"><h3>Insumos</h3><div class="tblw" style="margin:0"><table><tr><th>Insumo</th><th>Stock</th><th>Mín.</th><th>Estado</th></tr>'+INS.map(function(x){var l=x[1]<x[2];return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td>'+x[2]+'</td><td><span class="chip '+(l?'risk':'okc')+'" style="margin:0">'+(l?"Reponer":"Suficiente")+'</span></td></tr>'}).join("")+'</table></div></div>';
+h+='<div class="box rsp"><h4 style="margin:0 0 8px;color:var(--pri)">Responsables de cada área</h4>'+[["Gestión","ges"],["Recepción","rec"],["Toma de muestra","tom"],["Transporte / Logística","log"],["Resultados","res"]].map(function(x){return '<div><b>'+x[0]+':</b> '+RS[x[1]][0]+' – DNI '+RS[x[1]][1]+'</div>'}).join("")+'</div>';
+return h}
+function recep(){
+var w=S.filter(function(p){return p.s==0}),rc=S.filter(function(p){return p.x[1]}).sort(function(a,b){return b.x[1].rec-a.x[1].rec});
+var h='<div class="grid"><div class="stat"><b>'+S.length+'</b><span>Pacientes</span></div><div class="stat"><b>'+w.length+'</b><span>Por recibir</span></div><div class="stat"><b>'+rc.length+'</b><span>Muestras recibidas</span></div></div>';
+h+='<div class="box"><div class="head"><b>Pacientes por recibir</b><span>'+w.length+'</span></div>'+list(0)+'</div>';
+h+='<div class="box"><div class="head"><b>Muestras recibidas</b><span>'+rc.length+'</span></div>'+(rc.map(function(p){var x=p.x[1];return '<div class="card2"><div class="head"><b style="margin:0">'+esc(p.n)+'</b><button class="btn sec" onclick="openP('+S.indexOf(p)+')">Ver</button></div><div class="tests" style="margin-bottom:6px">DNI '+p.d+' · '+p.ord+'</div><div class="kv"><span>Tubo</span><div>'+x.tubo+'</div><span>Ayuno</span><div>'+x.ayuno+'</div><span>Extracción</span><div>'+fmt(x.ext)+'</div><span>Recepción</span><div>'+fmt(x.rec)+'</div><span>Condición</span><div>'+x.cond+'</div></div></div>'}).join("")||'<div class="empty">Aún no hay muestras recibidas.</div>')+'</div>';
+h+='<div class="box rsp"><h4 style="margin:0 0 8px;color:var(--pri)">Responsable de recepción</h4><div><b>Recepción:</b> '+RS.rec[0]+' – DNI '+RS.rec[1]+'</div></div>';
+return h}
+function sam(p){return p.t.every(function(c){return c=="HEM"})?[["Tipo","Sangre total (EDTA)"],["Aspecto","Homogénea, sin coágulos"],["Examen microscópico","Frotis no solicitado"],["Electroforesis","No solicitada"]]:[["Tipo","Suero/plasma"],["Aspecto","Claro"],["Lipemia","No"],["Hemólisis","No"],["Ictericia","No"],["Examen microscópico","No aplica (muestra de suero)"],["Electroforesis","No solicitada"]]}
+function ad(c,up){return(up?"elevad":"disminuid")+(c=="TRI"?"os":c=="COL"?"o":"a")}
+function interp(p){CS=p.sx;var hm=p.t.every(function(c){return c=="HEM"}),hi=0,lo=0,ps=[];
+p.t.forEach(function(c){var v=p.v[c],t=T[c];if(v>t[3]){hi=1;ps.push(t[0]+" "+ad(c,1)+".")}else if(v<t[2]){lo=1;ps.push(t[0]+" "+ad(c,0)+".")}});
+var r=p.t.map(function(c){var t=T[c];return t[0]+" "+(t[2]?nf(t[2])+"-":"<")+nf(t[3])+" "+t[1]}).join(" | ");
+var tx=(hm?"Hematología. ":"Bioquímica. ")+(ps.length?ps.join(" "):"Resultados dentro de los valores de referencia.")+(hm?" Muestra":" Suero")+" sin interferencias."+(ps.length?" Paciente en riesgo.":"");
+var a=ps.length?'<div class="alert bad">🔴 '+(hi&&lo?"RIESGO – Valores fuera del rango de referencia":hi?"ALTO / RIESGO – Por encima del valor de referencia":"BAJO / RIESGO – Por debajo del valor de referencia")+'</div>':'<div class="alert good">🟢 NORMAL – Dentro de los valores de referencia</div>';
+return '<p style="font-size:14px;margin:12px 0 0"><b>Valores de referencia:</b> '+r+'</p><p style="font-size:14px;margin:6px 0 0">'+tx+'</p>'+a}
+function item(p,i){return '<div class="item"><div class="dni">'+p.d+'</div><div><div>'+esc(p.n)+'</div><div class="tests">'+p.ord+' · '+p.t.map(function(c){return T[c][0]}).join(" · ")+'</div><span class="chip s'+p.s+'">'+ST[p.s]+'</span>'+(risk(p)?'<span class="chip risk">⚠ Riesgo</span>':'')+(critp(p)?'<span class="chip risk">🚨 Crítico</span>':'')+(p.ent?'<span class="chip s4">✔ Entregado</span>':'')+'</div><button class="btn sec" onclick="openP('+i+')">Ver</button></div>'}
+function list(f){var h='';S.forEach(function(p,i){if(f!=null&&p.s!=f)return;if(q&&(p.d+" "+p.n+" "+p.ord).toLowerCase().indexOf(q.toLowerCase())<0)return;h+=item(p,i)});return h||'<div class="empty">Sin pacientes para mostrar.</div>'}
+function render(){
+document.getElementById("tabs").innerHTML=TABS.map(function(t,i){return '<button class="'+(i==tab?'on':'')+'" onclick="go('+i+')">'+t+'</button>'}).join("");
+var a=document.getElementById("app"),h=ubar(),oc=INC.filter(function(x){return x.tipo=="Resultado crítico"&&x.est=="Abierta"}).length;
+var lt=CU&&CU.r!="pac"?late():0;if(lt>LL)beep();LL=lt;if(lt)h+='<div class="alert bad" onclick="go(1)">⏰ '+lt+' informe(s) sin entregar hace más de 3 h · Ver</div>';
+if(oc)h+='<div class="alert bad" onclick="go(9)">🚨 '+oc+' resultado(s) crítico(s) con incidencia abierta · Ver</div>';
+if(tab==0){
+h+=pend();
+h+='<div class="grid"><div class="stat"><b>'+S.length+'</b><span>Total</span></div>'+[0,1,2,3,4].map(function(s){return '<div class="stat"><b>'+cnt(s)+'</b><span>'+["Recepción","Muestra","En tránsito","Procesam.","Resultados"][s]+'</span></div>'}).join("")+'</div>';
+h+='<div class="box search"><h3>🔍 Buscar por DNI, nombre u orden</h3><div class="row"><input type="text" id="q" placeholder="Ej: 45678912, Quispe u ORD-" value="'+esc(q)+'"><button class="btn" onclick="doQ()">Buscar</button></div></div>';
+h+='<div class="box"><div class="head"><b>Listado de pacientes</b><span>'+S.length+' pacientes</span></div>'+list(null)+'</div>';
+}else if(tab==1){
+h+=gest()+bk();
+h+='<div class="box"><h3>Registro de paciente</h3><div class="fld"><span>DNI (8 dígitos)</span><div class="row"><input type="text" id="fd" inputmode="numeric" maxlength="8"></div></div><div class="fld"><span>Apellidos y nombres</span><div class="row"><input type="text" id="fn"></div></div><div class="fld"><span>Teléfono celular</span><div class="row"><input type="tel" id="ft" inputmode="numeric" maxlength="11"></div></div><div class="fld"><span>Médico solicitante (nombre y CMP)</span><div class="row"><input type="text" id="fm" placeholder="Dr./Dra. … – CMP …"></div></div><div class="fld"><span>Procedencia</span><div class="row"><select id="fp"><option>Particular</option><option>Consultorio externo</option><option>Clínica</option><option>Hospital</option><option>Empresa / ocupacional</option></select></div></div><div class="fld"><span>Diagnóstico presuntivo o motivo (opcional)</span><div class="row"><input type="text" id="fx"></div></div><div class="fld"><span>Fecha de nacimiento</span><div class="row"><input type="date" id="fb"></div></div><div class="fld"><span>Sexo</span><div class="row"><select id="fs"><option value="">Seleccionar</option><option value="F">Femenino</option><option value="M">Masculino</option></select></div></div><details class="box" style="margin:8px 0"><summary><b>Consentimiento informado</b> (leer)</summary><div class="note">FIBONACCI Laboratorio Clínico tratará los datos personales y de salud del paciente solo para realizar los análisis, emitir y custodiar el informe y comunicarse con el paciente o su médico solicitante. Los datos son confidenciales. El paciente puede acceder a ellos, rectificarlos o pedir su eliminación conforme a ley. Los resultados solo se entregan al paciente o a quien él autorice.</div></details><label class="ck"><input type="checkbox" id="fc">El paciente leyó y aceptó el consentimiento informado y autoriza el tratamiento de sus datos personales de salud (Ley N.º 29733).</label><div class="fld"><span>N.º de orden de laboratorio (automático)</span><div class="row"><input type="text" value="'+ord(1040+S.length)+'" disabled></div></div><div class="fld"><span>Análisis solicitados</span>'+Object.keys(T).map(function(c){return '<label class="ck"><input type="checkbox" value="'+c+'">'+T[c][0]+'</label>'}).join("")+'</div>'+ntForm()+'<button class="btn" onclick="add()">Registrar en Recepción</button><div class="note" id="msg"></div></div>';
+}else if(tab==7){
+h+='<div class="grid"><div class="stat"><b>3/3</b><span>Equipos operativos</span></div><div class="stat"><b>4/4</b><span>Controles conformes</span></div><div class="stat"><b>'+audit().length+'</b><span>Registros auditoría</span></div></div>';
+h+='<div class="box"><h3>Equipos y mantenimiento</h3>'+EQ.map(function(e){return '<div class="card2"><b>'+e.n+'</b><div class="kv"><span>Modelo</span><div>'+e.mod+' · '+e.cod+'</div><span>Estado</span><div><span class="chip okc" style="margin:0">Operativo</span></div><span>Mantenimiento</span><div>'+e.mant+'</div><span>Último</span><div>'+e.ult+'</div><span>Próximo</span><div>'+e.prox+'</div><span>Responsable</span><div>'+e.resp+'</div></div></div>'}).join("")+'</div>';
+h+='<div class="box"><h3>Controles internos del día</h3>'+CI.map(function(c){return '<div class="card2"><b>'+c.p+' <span class="chip okc" style="margin:0 0 0 6px">Conforme</span></b><div class="kv"><span>Fecha y hora</span><div>'+fmt(c.t)+'</div><span>Lote</span><div>'+c.lote+'</div><span>Obtenido</span><div>'+c.obt+'</div><span>Criterio</span><div>'+c.cri+'</div><span>Responsable</span><div>'+RS.res[0]+'</div><span>Observaciones</span><div>Sin desviaciones; regla 1-2s de Westgard cumplida.</div></div></div>'}).join("")+'</div>';
+h+='<div class="box"><h3>Auditoría reciente</h3>'+tl(audit().slice(0,15))+'</div>';
+}else if(tab==8){h+=cat();}else if(tab==9){h+=incT();}else if(tab==10){h+=indT();}else if(tab==11){h+=vT();}else if(tab==12){h+=pT();}else if(tab==2){h+=recep();
+}else{var f=tab-2;h+='<div class="box"><div class="head"><b>'+ST[f]+'</b><span>'+cnt(f)+' pacientes</span></div>'+list(f)+'</div>'}
+a.innerHTML=h;
+var qi=document.getElementById("q");if(qi)qi.onkeydown=function(e){if(e.key=="Enter")doQ()};
+}
+function pend(){if(!CU||CU.r=="pac")return"";var c=function(s){return cnt(s)},L=[];
+if(CU.r=="rec"){L=[["Por registrar muestra",c(0),3],["Resultados por entregar",S.filter(function(p){return p.s==4&&!p.ent}).length,8]]}
+else if(CU.r=="tom"){L=[["Muestras por tomar",c(0),3],["Por enviar a laboratorio",c(1),4]]}
+else if(CU.r=="pro"){L=[["Por recibir",c(2),5],["Por procesar y validar",c(3),6],["Críticos sin cerrar",INC.filter(function(x){return x.est=="Abierta"&&x.tipo=="Resultado crítico"}).length,11]]}
+else{L=[["Incidencias abiertas",INC.filter(function(x){return x.est=="Abierta"}).length,11],["Resultados sin entregar",S.filter(function(p){return p.s==4&&!p.ent}).length,8]]}
+return'<div class="box"><h3>Mis pendientes · '+esc(CU.rol)+'</h3>'+L.map(function(a){return'<div class="bar" style="grid-template-columns:1fr 44px 70px"><span>'+a[0]+'</span><b>'+a[1]+'</b><button class="btn sec" onclick="go('+(a[2]-1)+')">Ir</button></div>'}).join("")+'</div>'}
+function bk(){return'<div class="box"><h3>Respaldo de datos</h3><div class="note" style="margin:0 0 10px">Guarda una copia de pacientes e incidencias o restaúrala en otro equipo.</div><div class="row"><button class="btn" onclick="bkx()">Descargar respaldo</button><button class="btn sec" onclick="document.getElementById(\'bki\').click()">Restaurar</button><input type="file" id="bki" accept=".json" style="display:none" onchange="bki(this)"></div></div>'}
+function bkx(){if(!can("cer"))return;var b=new Blob([JSON.stringify({v:1,t:Date.now(),S:S,INC:INC})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="fibonacci-respaldo-"+new Date().toISOString().slice(0,10)+".json";a.click();toast("Respaldo descargado.")}
+function bki(el){if(!can("cer"))return;var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!Array.isArray(d.S)||!Array.isArray(d.INC))throw 0;if(!confirm("Se reemplazarán los datos actuales. ¿Continuar?"))return;S=d.S;INC=d.INC;save();saveI();render();toast("Respaldo restaurado.")}catch(e){toast("El archivo no es un respaldo válido.")}};r.readAsText(f)}
+function go(i){if(CU&&CU.r=="pac"&&i!=12)return;tab=i;q="";render();window.scrollTo(0,0)}
+function doQ(){q=document.getElementById("q").value.trim();render()}
+function add(){if(!can("add"))return;
+var d=document.getElementById("fd").value.trim(),n=document.getElementById("fn").value.trim(),tl=document.getElementById("ft").value.replace(/\D/g,""),m=document.getElementById("msg");
+var t=[].slice.call(document.querySelectorAll("#app input[type=checkbox]:checked")).map(function(x){return x.value});
+if(!/^\d{8}$/.test(d)){m.textContent="El DNI debe tener 8 dígitos.";return}
+if(!n){m.textContent="Escribe el nombre del paciente.";return}
+if(tl.length!=9){m.textContent="El teléfono debe tener 9 dígitos.";return}
+var fb=document.getElementById("fb").value,fs=document.getElementById("fs").value;
+if(!fb||fb>new Date().toISOString().slice(0,10)){m.textContent="Indica una fecha de nacimiento válida.";return}
+if(!fs){m.textContent="Selecciona el sexo.";return}
+var md=document.getElementById("fm").value.trim(),pr=document.getElementById("fp").value,dg=document.getElementById("fx").value.trim();
+if(!md){m.textContent="Indica el médico solicitante (o escribe «Sin médico»).";return}
+if(!document.getElementById("fc").checked){m.textContent="Registra el consentimiento informado del paciente.";return}
+if(!t.length){m.textContent="Selecciona al menos un análisis.";return}
+if(S.some(function(p){return p.d==d})){m.textContent="Ya existe un paciente con ese DNI.";return}
+var now=Date.now();S.push({cons:{t:Date.now(),by:CU?CU.n:RS.rec[0]},med:md,pro:pr,dx:dg,nac:fb,sx:fs,d:d,n:n,tel:tl.replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3"),ord:ord(1040+S.length),t:t,s:0,v:{},x:{},h:[[now,ST[0],DET[0],RS.rec[0]]]});save();tab=2;render()}
+function openP(i){CS=S[i].sx;
+var p=S[i],x=p.x,h='<h2>'+esc(p.n)+'</h2><div class="tests">DNI '+p.d+' · Tel. '+p.tel+'<br>'+dem(p)+'Orden '+p.ord+'</div><div class="steps">'+ST.map(function(z,k){return '<i class="'+(k<=p.s?'on':'')+'"></i>'}).join("")+'</div><span class="chip s'+p.s+'">'+ST[p.s]+'</span>'+(risk(p)?'<span class="chip risk">⚠ Riesgo</span>':'')+(critp(p)?'<span class="chip risk">🚨 Crítico</span>':'')+(p.ent?'<span class="chip s4">✔ Entregado '+fmt(p.ent)+'</span>':'');
+if(p.s==4){
+h+='<div class="tblw"><table><tr><th>Análisis</th><th>Resultado</th><th>Referencia</th></tr>'+p.t.map(function(c){var t=T[c],v=p.v[c],o=out(c,v);return '<tr><td>'+t[0]+'</td><td class="'+(o?'hi':'')+'">'+nf(v)+' '+t[1]+(o?' ⚠':'')+'</td><td>'+(t[2]?nf(t[2])+'–':'<')+nf(t[3])+'</td></tr>'}).join("")+'</table></div>'+interp(p);}
+if(x[1])h+=kv("Toma de muestra",[["Identificación",x[1].idv==0?"No verificada con 2 identificadores":"Paciente verificado con 2 identificadores: nombre y DNI "+p.d],["Ayuno",x[1].ayuno+" · "+(x[1].ayc||"Confirmado con el paciente")],["Sitio de punción",x[1].sitio||"Vena antecubital (pliegue del codo)"],["Tubos utilizados",x[1].tubo],["Volumen","≈ "+nf(x[1].vol||4)+" mL por tubo"],["Intentos de punción",String(x[1].int||1)],["Rotulado",x[1].rot==0?"No confirmado":"Tubos rotulados con N.º de orden "+p.ord+" y DNI"],["Fecha y hora",fmt(x[1].ext)],["Observaciones",x[1].obs||"Sin incidentes durante la extracción"],["Responsable",RS.tom[0]+" – DNI "+RS.tom[1]]])+kv("Recepción de muestra",[["Recepción",fmt(x[1].rec)],["Verificación","Orden y rótulos concordantes"],["Condición",x[1].cond],["Responsable",RS.rec[0]+" – DNI "+RS.rec[1]]]);
+if(x[2])h+=kv("Transporte",[["Temperatura",x[2].temp],["Integridad",x[2].integ],["Recepción en lab.",fmt(x[2].rec)],["Observaciones",x[2].obs],["Responsable",x[2].resp]]);
+if(x[3])h+=kv("Procesamiento",[["Método",x[3].met],["Equipo",x[3].eq],["Procesamiento",fmt(x[3].fecha)],["Control interno",x[3].ci],["Responsable",x[3].resp]]);
+if(x[3])h+=kv("Examen de la muestra",sam(p));
+if(x[4])h+=kv("Validación profesional",[["Profesional",x[4].nom],["Colegiatura / DNI",x[4].col],["Revisión","Confirmada"],["Fecha y hora",fmt(x[4].fecha)]]);
+if(p.s==3)h+='<div class="sec"><h4>Registro y validación de resultados</h4>'+p.t.map(function(c){return '<div class="fld"><span>'+T[c][0]+' ('+T[c][1]+')</span><div class="row"><input type="number" step="any" id="r_'+c+'"></div></div>'}).join("")+'<div class="fld"><span>Profesional que valida</span><div class="row"><input type="text" id="vn" value="'+VAL.nom+'"></div></div><div class="fld"><span>Colegiatura / DNI del responsable</span><div class="row"><input type="text" id="vc" value="'+VAL.col+'"></div></div><div class="fld"><span>Si hay valor crítico: a quién se notificó, medio y hora</span><div class="row"><input type="text" id="vnn" placeholder="Obligatorio solo si hay valor crítico"></div></div><label class="ck"><input type="checkbox" id="vk">Confirmo que revisé los resultados</label><div class="note" id="rm"></div></div>';
+if(p.s==4)h+=sel(p)+trH(p);
+if(p.s==0)h+=tmF(i);
+h+=kv("Consentimiento y privacidad",[["Consentimiento informado",p.cons?"Aceptado "+fmt(p.cons.t)+" · registrado por "+p.cons.by:"No registrado"],["Accesos del paciente al portal",p.acc&&p.acc.length?p.acc.length+" (último "+fmt(p.acc[p.acc.length-1])+")":"Ninguno"]]);
+h+='<div class="sec"><h4>Trazabilidad</h4>'+tl(p.h.slice().reverse())+'</div>';
+
+h+='<div class="sec rsp"><h4>Responsables de cada área</h4>'+[["Gestión","ges"],["Recepción","rec"],["Toma de muestra","tom"],["Transporte / Logística","log"],["Resultados","res"]].map(function(r){return '<div><b>'+r[0]+':</b> '+RS[r[1]][0]+' – DNI '+RS[r[1]][1]+'</div>'}).join("")+'</div>';
+h+='<div class="acts">'+(p.s==3?'<button class="btn" onclick="res('+i+')">Validar y emitir</button>':p.s==0?'<button class="btn" onclick="tom('+i+')">Registrar toma de muestra</button>':p.s<3?'<button class="btn" onclick="adv('+i+')">Avanzar a '+ST[p.s+1]+'</button>':'')+'<button class="btn cl" onclick="closeP()">Cerrar</button>'+(p.s==4?'<button class="btn" onclick="wsp('+i+')">💬 WhatsApp al paciente</button><button class="btn" onclick="pdf('+i+')">⬇ Descargar PDF</button><button class="btn sec" onclick="inf('+i+')">📄 Informe formal</button>'+(p.ent?'':'<button class="btn ok" onclick="ent('+i+')">Marcar entregado</button>'):'')+'</div><div class="note" id="am"></div>';
+document.getElementById("sheet").innerHTML=h;document.getElementById("modal").className="on"}
+function shr(i){var p=S[i],x=p.x[4],m=document.getElementById("am");
+var tx="FIBONACCI · Laboratorio Clínico\nInforme "+p.ord+"\nPaciente: "+p.n+" (DNI "+p.d+")\n"+p.t.map(function(c){var t=T[c];return t[0]+": "+nf(p.v[c])+" "+t[1]+" (ref. "+(t[2]?nf(t[2])+"-":"<")+nf(t[3])+")"}).join("\n")+"\nValidado por: "+x.nom+" – "+x.col+" ("+fmt(x.fecha)+")";
+function cp(){try{navigator.clipboard.writeText(tx).then(function(){m.textContent="Informe copiado. Pégalo en WhatsApp u otra app."},function(){m.textContent=tx})}catch(e){m.textContent=tx}}
+if(navigator.share){navigator.share({title:"Informe "+p.ord,text:tx}).catch(cp)}else cp()}
+function ent(i){if(!can("ent"))return;var p=S[i];p.ent=Date.now();p.h.push([p.ent,"Entrega","Informe entregado al paciente",RS.res[0]]);save();render();openP(i)}
+function closeP(){document.getElementById("modal").className=""}
+function adv(i){if(!can(S[i].s+1))return;step(S[i],S[i].s+1,Date.now());save();render();openP(i)}
+function res(i){if(!can(4))return;CS=S[i].sx;var p=S[i],v={},m=document.getElementById("rm"),n=document.getElementById("vn").value.trim(),c=document.getElementById("vc").value.trim();
+for(var k=0;k<p.t.length;k++){var x=document.getElementById("r_"+p.t[k]).value;if(x===""||isNaN(+x)){m.textContent="Completa todos los valores.";return}v[p.t[k]]=+x}
+if(!n||!c){m.textContent="Indica el nombre y la colegiatura del profesional.";return}
+if(!document.getElementById("vk").checked){m.textContent="Confirma la revisión de los resultados.";return}
+var cl=p.t.filter(function(k){return crit(k,v[k])}),nt=document.getElementById("vnn").value.trim();
+if(cl.length&&!nt){m.textContent="Valor crítico: indica a quién se notificó, por qué medio y a qué hora.";return}
+step(p,4,Date.now(),{nom:n,col:c,v:v});
+if(cl.length){var tt=cl.map(function(k){return T[k][0]+" "+nf(v[k])+" "+T[k][1]}).join("; ");INC.unshift({id:Date.now(),t:Date.now(),tipo:"Resultado crítico",area:"Resultados",ord:p.ord,desc:tt,acc:"Notificado a: "+nt,resp:n,est:"Abierta"});saveI();p.h.push([Date.now(),"Crítico","Valor crítico comunicado: "+nt,n])}
+save();render();openP(i)}
+var CS,SR={HEM:{F:[12,16],M:[13.5,17.5]},CRE:{F:[.5,1.1],M:[.7,1.3]}};
+Object.keys(SR).forEach(function(c){var o=[T[c][2],T[c][3]];[2,3].forEach(function(k){Object.defineProperty(T[c],k,{get:function(){var r=SR[c][CS];return r?r[k-2]:o[k-2]},configurable:true})})});
+var LAB={dir:"[Dirección del laboratorio]",tel:"[Teléfono]",ruc:"[RUC]"};
+var CR={GLU:[50,400],COL:[null,400],TRI:[null,500],HEM:[7,20],CRE:[null,4],URE:[null,150]},CAT={GLU:2,COL:2,TRI:2,HEM:1,CRE:3,URE:3},cq="";
+try{TX=JSON.parse(localStorage.getItem(K+"-tests"))||{}}catch(e){TX={}}
+Object.keys(TX).forEach(function(c){var x=TX[c];T[c]=[x.n,x.u,x.lo,x.hi];M[c]=x.m;CR[c]=[x.cl,x.ch];CAT[c]=x.h});
+function saveT(){try{localStorage.setItem(K+"-tests",JSON.stringify(TX))}catch(e){}}
+function ntForm(){return '<details class="box" style="margin:8px 0" id="ntd"><summary><b>➕ Agregar análisis nuevo a la lista</b></summary>'
++'<div class="fld"><span>Nombre del análisis</span><div class="row"><input type="text" id="nt_n" placeholder="Ej: Ácido úrico"></div></div>'
++'<div class="fld"><span>Código (opcional, máx. 6 letras o números)</span><div class="row"><input type="text" id="nt_c" maxlength="6" placeholder="Se genera solo si lo dejas vacío"></div></div>'
++'<div class="fld"><span>Unidad</span><div class="row"><input type="text" id="nt_u" placeholder="mg/dL"></div></div>'
++'<div class="fld"><span>Referencia: valor mínimo (vacío si solo hay máximo)</span><div class="row"><input type="text" id="nt_lo" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Referencia: valor máximo</span><div class="row"><input type="text" id="nt_hi" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Método</span><div class="row"><input type="text" id="nt_m" placeholder="Ej: uricasa-peroxidasa"></div></div>'
++'<div class="fld"><span>Tubo</span><div class="row"><select id="nt_tb"><option>Gel separador (tapa amarilla)</option><option>EDTA K2 (tapa lila)</option><option>Fluoruro de sodio (tapa roja)</option><option>Heparina de litio (tapa verde)</option></select></div></div>'
++'<div class="fld"><span>Ayuno</span><div class="row"><select id="nt_ay"><option value="0">No requerido</option><option value="1">Sí, 8 horas</option></select></div></div>'
++'<div class="fld"><span>Tiempo de entrega (horas)</span><div class="row"><input type="number" id="nt_h" min="1" max="72" value="2"></div></div>'
++'<div class="fld"><span>Valor crítico: menor que (opcional)</span><div class="row"><input type="text" id="nt_cl" inputmode="decimal"></div></div>'
++'<div class="fld"><span>Valor crítico: mayor que (opcional)</span><div class="row"><input type="text" id="nt_ch" inputmode="decimal"></div></div>'
++'<button class="btn sec" type="button" onclick="addT()">Guardar análisis</button><div class="note" id="ntm"></div></details>'}
+function addT(){if(!can("add"))return;
+var g=function(i){return document.getElementById(i).value.trim().replace(",",".")},m=document.getElementById("ntm"),
+n=document.getElementById("nt_n").value.trim(),un=document.getElementById("nt_u").value.trim(),me=document.getElementById("nt_m").value.trim(),
+c=g("nt_c").toUpperCase().replace(/[^A-Z0-9]/g,""),lo=g("nt_lo"),hi=g("nt_hi"),cl=g("nt_cl"),ch=g("nt_ch"),h=parseInt(g("nt_h"),10);
+if(!n){m.textContent="Escribe el nombre del análisis.";return}
+if(!un){m.textContent="Indica la unidad (ej. mg/dL).";return}
+if(hi===""||isNaN(+hi)){m.textContent="Indica el valor máximo de referencia (número).";return}
+if(lo!==""&&(isNaN(+lo)||+lo>=+hi)){m.textContent="El mínimo debe ser un número menor que el máximo.";return}
+if((cl!==""&&isNaN(+cl))||(ch!==""&&isNaN(+ch))){m.textContent="Los valores críticos deben ser números.";return}
+if(!(h>=1&&h<=72)){m.textContent="El tiempo de entrega debe estar entre 1 y 72 horas.";return}
+if(Object.keys(T).some(function(k){return T[k][0].toLowerCase()==n.toLowerCase()})){m.textContent="Ya existe un análisis con ese nombre.";return}
+if(!c){c=n.toUpperCase().normalize("NFD").replace(/[^A-Z]/g,"").slice(0,3)||"EXA"}
+var b=c,i=2;while(T[c]){c=b.slice(0,5)+i;i++}
+TX[c]={n:n,u:un,lo:lo===""?0:+lo,hi:+hi,m:me||"Según técnica del laboratorio",tb:document.getElementById("nt_tb").value,ay:document.getElementById("nt_ay").value=="1",h:h,cl:cl===""?null:+cl,ch:ch===""?null:+ch};
+var x=TX[c];T[c]=[x.n,x.u,x.lo,x.hi];M[c]=x.m;CR[c]=[x.cl,x.ch];CAT[c]=x.h;saveT();
+var ids=["fd","fn","ft","fm","fp","fx","fb","fs"],keep={};ids.forEach(function(k){keep[k]=document.getElementById(k).value});
+var fc=document.getElementById("fc").checked,sel=[].slice.call(document.querySelectorAll("#app input[type=checkbox]:checked")).map(function(e){return e.value}).filter(Boolean);
+render();
+ids.forEach(function(k){document.getElementById(k).value=keep[k]});document.getElementById("fc").checked=fc;
+sel.push(c);[].slice.call(document.querySelectorAll("#app input[type=checkbox]")).forEach(function(e){if(sel.indexOf(e.value)>=0)e.checked=true});
+toast("✅ Análisis «"+n+"» agregado (código "+c+") y marcado en la lista.")}
+var TIPOS=["Muestra rechazada o hemolizada","Error de identificación","Falla de equipo","Retraso en entrega","Control de calidad fuera de rango","Resultado crítico","Otro"];
+var INC;try{INC=JSON.parse(localStorage.getItem(K+"-inc"))}catch(e){}
+if(!Array.isArray(INC))INC=[{id:1,t:D0+30*6e4,tipo:"Muestra rechazada o hemolizada",area:"Recepción",ord:"",desc:"Tubo con hemólisis visible; se solicitó nueva extracción.",acc:"Nueva toma realizada y registrada.",resp:RS.rec[0],est:"Cerrada",cer:D0+75*6e4}];
+function saveI(){try{localStorage.setItem(K+"-inc",JSON.stringify(INC))}catch(e){}}
+function crit(c,v){var r=CR[c];return v!=null&&((r[0]!=null&&v<r[0])||(r[1]!=null&&v>r[1]))}
+function critp(p){return p.s==4&&p.t.some(function(c){return crit(c,p.v[c])})}
+function edad(n){var b=n.split("-").map(Number),h=new Date(),a=h.getFullYear()-b[0];if(h<new Date(h.getFullYear(),b[1]-1,b[2]))a--;return a}
+function dem(p){return(p.nac?"Edad "+edad(p.nac)+" años · Sexo "+(p.sx=="F"?"femenino":"masculino")+"<br>":"")+(p.med?"Médico: "+esc(p.med)+" · "+esc(p.pro||"Particular")+"<br>":"")+(p.dx?"Dx presuntivo: "+esc(p.dx)+"<br>":"")}
+function hm(m){m=Math.round(m);return Math.floor(m/60)+" h "+m%60+" min"}
+function op(a){return a.map(function(x){return "<option>"+x+"</option>"}).join("")}
+function rng(c){var t=T[c];return(t[2]?nf(t[2])+"–":"<")+nf(t[3])+" "+t[1]+(SR[c]&&CS?" ("+(CS=="F"?"mujer":"hombre")+")":"")}
+function refc(c){if(!SR[c])return rng(c);var o=CS;CS="F";var a=rng(c);CS="M";var b=rng(c);CS=o;return a+"<br>"+b}
+function catC(){var f=cq.toLowerCase(),h="";Object.keys(T).forEach(function(c){var t=T[c];if(f&&(t[0]+c).toLowerCase().indexOf(f)<0)return;var n=S.filter(function(p){return p.t.indexOf(c)>=0}).length,r=CR[c];
+h+='<div class="box"><div class="head"><b>'+t[0]+'</b><span>'+c+'</span></div><div class="kv"><span>Método</span><div>'+M[c]+'</div><span>Tubo</span><div>'+tubos({t:[c]})+'</div><span>Ayuno</span><div>'+ayu({t:[c]})+'</div><span>Referencia</span><div>'+refc(c)+'</div><span>Valor crítico</span><div>'+(r[0]!=null?"< "+nf(r[0])+" ":"")+(r[0]!=null&&r[1]!=null?"o ":"")+(r[1]!=null?"> "+nf(r[1])+" ":"")+t[1]+'</div><span>Entrega</span><div>'+CAT[c]+' h</div><span>Solicitado</span><div>'+n+' órdenes</div></div></div>'});return h||'<div class="empty">Sin exámenes.</div>'}
+function cat(){return '<div class="box search"><h3>🔎 Catálogo de exámenes</h3><div class="row"><input type="text" placeholder="Buscar examen o código" value="'+esc(cq)+'" oninput="cq=this.value;document.getElementById(\'cl\').innerHTML=catC()"></div></div><div id="cl">'+catC()+'</div>'}
+function incT(){var ab=INC.filter(function(x){return x.est=="Abierta"}).length,h='<div class="grid"><div class="stat"><b>'+ab+'</b><span>Abiertas</span></div><div class="stat"><b>'+(INC.length-ab)+'</b><span>Cerradas</span></div><div class="stat"><b>'+INC.filter(function(x){return x.tipo=="Resultado crítico"}).length+'</b><span>Críticos</span></div></div>';
+h+='<div class="box"><h3>Registrar incidencia</h3><div class="fld"><span>Tipo</span><div class="row"><select id="it">'+op(TIPOS)+'</select></div></div><div class="fld"><span>Área</span><div class="row"><select id="ia">'+op(["Recepción","Toma de muestra","Transporte","Procesamiento","Resultados","Gestión"])+'</select></div></div><div class="fld"><span>N.º de orden (opcional)</span><div class="row"><input type="text" id="io" placeholder="LAB-2026-001040"></div></div><div class="fld"><span>Descripción</span><div class="row"><input type="text" id="id"></div></div><div class="fld"><span>Acción correctiva</span><div class="row"><input type="text" id="ic"></div></div><button class="btn" onclick="addI()">Registrar</button><div class="note" id="im"></div></div>';
+h+='<div class="box"><div class="head"><b>Registro de incidencias</b><span>'+INC.length+'</span></div>'+(INC.map(function(x){return '<div class="card2"><b>'+(x.tipo=="Resultado crítico"?"🚨 ":"")+esc(x.tipo)+' <span class="chip '+(x.est=="Abierta"?"risk":"okc")+'" style="margin:0 0 0 6px">'+x.est+'</span></b><div class="kv"><span>Fecha</span><div>'+fmt(x.t)+'</div><span>Área</span><div>'+esc(x.area)+'</div>'+(x.ord?'<span>Orden</span><div>'+esc(x.ord)+'</div>':"")+'<span>Descripción</span><div>'+esc(x.desc)+'</div><span>Acción</span><div>'+esc(x.acc||"Pendiente")+'</div><span>Responsable</span><div>'+esc(x.resp)+'</div>'+(x.cer?'<span>Cierre</span><div>'+fmt(x.cer)+'</div>':"")+'</div>'+(x.est=="Abierta"?'<button class="btn sec" style="margin-top:8px" onclick="cerI('+x.id+')">Cerrar incidencia</button>':"")+'</div>'}).join("")||'<div class="empty">Sin incidencias.</div>')+'</div>';return h}
+function addI(){var g=function(k){return document.getElementById(k).value.trim()},m=document.getElementById("im");if(!g("id")){m.textContent="Describe la incidencia.";return}
+INC.unshift({id:Date.now(),t:Date.now(),tipo:g("it"),area:g("ia"),ord:g("io"),desc:g("id"),acc:g("ic"),resp:RS.ges[0],est:"Abierta"});saveI();render()}
+function cerI(id){if(!can("cer"))return;INC.forEach(function(x){if(x.id==id){x.est="Cerrada";x.cer=Date.now()}});saveI();render()}
+function kpi(){var r=S.filter(function(p){return p.s==4}),n=r.length||1,tat=r.map(function(p){return(p.x[4].fecha-p.h[0][0])/6e4}),sm=function(a){return a.reduce(function(x,y){return x+y},0)};
+return{tat:sm(tat)/n,meta:Math.round(tat.filter(function(m){return m<=240}).length/n*100),fr:Math.round(r.filter(risk).length/n*100),cr:r.filter(critp).length,en:Math.round(r.filter(function(p){return p.ent}).length/n*100),ab:INC.filter(function(x){return x.est=="Abierta"}).length,
+et:[1,2,3,4].map(function(k){var a=S.filter(function(p){return p.h[k]}).map(function(p){return(p.h[k][0]-p.h[k-1][0])/6e4});return a.length?sm(a)/a.length:0})}}
+function bars(){return ST.map(function(s,i){var n=cnt(i);return '<div class="bar"><span>'+s+'</span><div class="tr"><i style="width:'+Math.round(n/S.length*100)+'%"></i></div><b>'+n+'</b></div>'}).join("")}
+function indT(){var k=kpi(),L=["Recepción → Muestra","Muestra → Tránsito","Tránsito → Procesam.","Procesam. → Resultado"],mx=Math.max.apply(null,k.et.concat(1));
+var h='<button class="btn" onclick="proj(1)">📺 Modo proyección</button><div class="grid" style="margin-top:12px">'+[[hm(k.tat),"Tiempo medio total"],[k.meta+"%","Resultados en ≤ 4 h"],[k.fr+"%","Fuera de rango"],[k.cr,"Críticos"],[k.en+"%","Entregados"],[k.ab,"Incidencias abiertas"]].map(function(a){return '<div class="stat"><b style="font-size:'+(String(a[0]).length>5?19:28)+'px">'+a[0]+'</b><span>'+a[1]+'</span></div>'}).join("")+'</div>';
+h+='<div class="box"><h3>Tiempo medio por etapa</h3>'+L.map(function(l,i){return '<div class="bar" style="grid-template-columns:130px 1fr 52px"><span>'+l+'</span><div class="tr"><i style="width:'+Math.round(k.et[i]/mx*100)+'%"></i></div><b>'+Math.round(k.et[i])+' min</b></div>'}).join("")+'</div><div class="box"><h3>Órdenes por etapa</h3>'+bars()+'</div><div class="note">Meta de entrega: 4 h desde el registro. Los valores críticos se definen en el Catálogo.</div>';return h}
+function ini(n){return n.split(/[ ,]+/).filter(Boolean).map(function(w){return w[0]}).join(".")+"."}
+function proj(on){var el=document.getElementById("proj");clearInterval(window.pt);
+if(!on){if(el)el.remove();try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}return}
+if(!el){el=document.createElement("div");el.id="proj";document.body.appendChild(el);try{var f=el.requestFullscreen&&el.requestFullscreen();if(f&&f.catch)f.catch(function(){})}catch(e){}}
+function pr(){var k=kpi(),d=new Date(),q2=S.filter(function(p){return p.s<4}),oc=INC.filter(function(x){return x.tipo=="Resultado crítico"&&x.est=="Abierta"}).length;
+el.innerHTML='<div class="head"><b style="font-size:clamp(20px,4vw,40px);letter-spacing:.12em;color:var(--pri)">FIBONACCI · LABORATORIO</b><b style="font-size:clamp(20px,4vw,40px)">'+p2(d.getHours())+":"+p2(d.getMinutes())+'</b><button class="btn cl" onclick="proj(0)">✕</button></div>'+(oc?'<div class="alert bad pq">🚨 '+oc+' resultado(s) crítico(s) pendiente(s) de cierre</div>':"")+'<div class="pg">'+[[S.length,"Órdenes"],[q2.length,"En proceso"],[cnt(4),"Resultados listos"],[hm(k.tat),"Tiempo medio"],[k.meta+"%","Entrega ≤ 4 h"],[k.ab,"Incidencias abiertas"]].map(function(a){return '<div class="stat"><b>'+a[0]+'</b><span>'+a[1]+'</span></div>'}).join("")+'</div><div class="box"><h3 class="pq">Cola en proceso</h3>'+(q2.map(function(p){return '<div class="card2 pq"><b style="display:inline">'+p.ord+'</b> · '+ini(p.n)+' · <span class="chip s'+p.s+'">'+ST[p.s]+'</span></div>'}).join("")||'<div class="empty pq">Sin órdenes en proceso</div>')+'</div><div class="box">'+bars()+'</div>'}
+pr();window.pt=setInterval(pr,10000)}
+document.addEventListener("keydown",function(e){if(e.key=="Escape")proj(0)});
+function hsh(s){var h=5381;for(var i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(16).toUpperCase()}
+function inf(i){CS=S[i].sx;var p=S[i],x=p.x[4],ver=hsh(p.ord+p.d+x.fecha+p.t.map(function(c){return c+p.v[c]}).join(",")),q="";
+try{var g=qrcode(0,"M");g.addData("FIBONACCI|"+p.ord+"|DNI "+p.d+"|"+fmt(x.fecha)+"|VER "+ver);g.make();var n=g.getModuleCount(),d="",z=n+4;for(var a=0;a<n;a++)for(var b=0;b<n;b++)if(g.isDark(a,b))d+="M"+b+" "+a+"h1v1h-1z";q='<svg viewBox="-2 -2 '+z+' '+z+'" shape-rendering="crispEdges"><rect x="-2" y="-2" width="'+z+'" height="'+z+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>'}catch(e){q='<div class="note" style="text-align:center">QR no disponible</div>'}
+var st=function(c){var v=p.v[c];return crit(c,v)?"CRÍTICO":v>T[c][3]?"Alto":v<T[c][2]?"Bajo":"Normal"},ci=INC.filter(function(z){return z.ord==p.ord&&z.tipo=="Resultado crítico"})[0];
+var h='<div class="rep"><div class="mh"><svg width="48" height="48" viewBox="0 0 52 52"><rect x="2" y="2" width="48" height="48" rx="12" fill="none" stroke="#1d4ed8" stroke-width="2"/><rect x="11" y="11" width="13" height="10" rx="3" fill="#1d4ed8"/><rect x="11" y="25" width="13" height="14" rx="3" fill="#1d4ed8" fill-opacity=".55"/><rect x="28" y="11" width="13" height="28" rx="3" fill="#1d4ed8"/></svg><div class="mt"><b>FIBONACCI</b><small>LABORATORIO CLÍNICO</small><small>'+esc(LAB.dir)+' · Tel. '+esc(LAB.tel)+' · '+esc(LAB.ruc)+'</small></div><div class="qr">'+q+'</div></div><h2 class="rt">INFORME DE RESULTADOS</h2>';
+h+=kv("Datos del paciente",[["Paciente",p.n],["DNI",p.d],["Edad / sexo",p.nac?edad(p.nac)+" años · "+(p.sx=="F"?"Femenino":"Masculino"):"No registrado"],["N.º de orden",p.ord],["Médico solicitante",p.med||"No registrado"],["Procedencia",p.pro||"Particular"],["Diagnóstico presuntivo",p.dx||"No registrado"],["Toma de muestra",fmt(p.x[1].ext)],["Emisión",fmt(x.fecha)]]);
+h+='<div class="tblw"><table><tr><th>Análisis</th><th>Resultado</th><th>Referencia</th><th>Estado</th></tr>'+p.t.map(function(c){var s=st(c);return '<tr><td>'+T[c][0]+'</td><td class="'+(s!="Normal"?"hi":"")+'">'+nf(p.v[c])+' '+T[c][1]+'</td><td>'+rng(c)+'</td><td class="'+(s!="Normal"?"hi":"")+'">'+s+'</td></tr>'}).join("")+'</table></div>'+interp(p);
+if(ci)h+='<p style="font-size:13px"><b>Valor crítico comunicado.</b> '+esc(ci.acc)+'</p>';
+var cf=conf(p);h+='<p style="font-size:12.5px;margin:10px 0 0"><b>Sello de confianza:</b> '+cf.ok+' de '+cf.n+' controles cumplidos · trazabilidad de 5 etapas con responsable identificado.</p>';
+h+='<p style="font-size:12.5px;margin:6px 0 0"><b>Método:</b> '+esc(p.x[3].met)+'.</p><div class="fm"><div class="sg"><div style="height:34px"></div><div class="ln"></div><b>'+esc(x.nom)+'</b><small>'+esc(x.col)+'</small><small>Profesional que valida</small></div><svg width="110" height="110" viewBox="0 0 120 120"><g transform="rotate(-8 60 60)" fill="#1d4ed8" text-anchor="middle" font-family="sans-serif"><circle cx="60" cy="60" r="56" fill="none" stroke="#1d4ed8" stroke-width="3"/><circle cx="60" cy="60" r="48" fill="none" stroke="#1d4ed8"/><text x="60" y="38" font-size="9" font-weight="700">FIBONACCI</text><text x="60" y="49" font-size="6.5">LABORATORIO CLÍNICO</text><text x="60" y="65" font-size="10" font-weight="700">VALIDADO</text><text x="60" y="77" font-size="6">'+esc(x.nom)+'</text><text x="60" y="87" font-size="6">'+esc(x.col)+'</text><text x="60" y="98" font-size="6">'+fmt(x.fecha).slice(0,10)+'</text></g></svg></div><div class="note">Código de verificación: <b>'+p.ord+' · VER '+ver+'</b> · Informe válido con firma y sello del laboratorio. Los resultados corresponden a la muestra recibida.</div></div>';
+h+='<div class="acts"><button class="btn" onclick="pdf('+i+')">⬇ Descargar PDF</button><button class="btn" onclick="wsp('+i+')">💬 WhatsApp</button><button class="btn sec" onclick="window.print()">🖨 Imprimir</button><button class="btn cl" onclick="'+(CU&&CU.r=="pac"?"closeP()":"openP("+i+")")+'">Volver</button></div><div class="note" id="am"></div>';
+document.getElementById("sheet").innerHTML=h}
+function vcode(p){var x=p.x[4];return hsh(p.ord+p.d+x.fecha+p.t.map(function(c){return c+p.v[c]}).join(","))}
+function vT(){return '<div class="box search"><h3>🔐 Verificar autenticidad de un informe</h3><div class="note" style="margin:0 0 10px">Escanea el QR del informe o pega su código. Se recalcula la huella digital con los resultados guardados: si alguien cambió un valor, la verificación falla.</div><div class="row"><input type="text" id="vi" placeholder="LAB-2026-001040 · VER 1A2B3C"><button class="btn" onclick="chk()">Verificar</button></div><button class="btn sec" style="margin-top:10px" onclick="scan()">📷 Escanear QR</button><div class="row" style="margin-top:10px"><button class="btn sec" onclick="vtam(1)">✔ Probar informe real</button><button class="btn sec" onclick="vtam(0)">🧪 Probar código alterado</button></div><video id="vv" playsinline muted style="display:none;width:100%;border-radius:12px;margin-top:10px"></video><div class="note" id="vm"></div><div id="vr"></div></div>'}
+function chk(){var s=document.getElementById("vi").value,o=(s.match(/LAB-\d{4}-\d{6}/)||[])[0],h=(s.match(/VER\s*([0-9A-F]+)/i)||[])[1],r=document.getElementById("vr"),p=S.filter(function(z){return z.ord==o&&z.s==4})[0];
+if(!o||!h){r.innerHTML='<div class="alert bad">Código no reconocido.</div>';return}
+if(!p){r.innerHTML='<div class="alert bad">✖ No existe un informe emitido con esa orden.</div>';return}
+if(vcode(p)!=h.toUpperCase()){r.innerHTML='<div class="alert bad">✖ ALERTA: el código no coincide. El informe pudo ser alterado.</div>';return}
+r.innerHTML='<div class="alert good">✔ Informe auténtico</div>'+full(S.indexOf(p))}
+function scan(){var m=document.getElementById("vm"),vd=document.getElementById("vv");
+if(!window.BarcodeDetector||!navigator.mediaDevices){m.textContent="Este navegador no permite escanear aquí. Pega el código del informe.";return}
+navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(st){vd.srcObject=st;vd.style.display="block";vd.play();var bd=new BarcodeDetector({formats:["qr_code"]}),tm=setInterval(function(){bd.detect(vd).then(function(r){if(r.length){clearInterval(tm);st.getTracks().forEach(function(t){t.stop()});vd.style.display="none";document.getElementById("vi").value=r[0].rawValue;chk()}}).catch(function(){})},400)}).catch(function(){m.textContent="No se pudo acceder a la cámara. Pega el código del informe."})}
+var PV={"45678912":[{f:"2026-04-10",v:{GLU:110,COL:215,TRI:150}},{f:"2026-07-12",v:{GLU:118,COL:226,TRI:165}}],"71234567":[{f:"2026-05-02",v:{GLU:95,COL:190,TRI:130}}],"70456123":[{f:"2026-06-01",v:{GLU:90,CRE:.8,URE:30}}],"44556677":[{f:"2026-06-20",v:{CRE:1.1,URE:41}}],"41987654":[{f:"2026-06-05",v:{HEM:11.6}}],"47890123":[{f:"2026-05-15",v:{GLU:86,TRI:118}}]};
+function ser(p,c){var a=(PV[p.d]||[]).filter(function(z){return z.v[c]!=null}).map(function(z){return z.v[c]});a.push(p.v[c]);return a}
+function stt(p,c){CS=p.sx;var v=p.v[c];return crit(c,v)?"CRÍTICO":v>T[c][3]?"Alto":v<T[c][2]?"Bajo":"Normal"}
+function spk(c,a){var t=T[c],lo=Math.min.apply(null,a.concat(t[2]||a[0])),hi=Math.max.apply(null,a.concat(t[3])),y=function(v){return 28-(v-lo)/(hi-lo||1)*26},x=function(k){return 2+k*96/(a.length-1)};
+return '<svg viewBox="0 0 100 30" width="100" height="30"><rect x="0" y="'+y(t[3])+'" width="100" height="'+Math.max(0,y(t[2]||lo)-y(t[3]))+'" fill="var(--ok)"/><polyline fill="none" stroke="var(--pri)" stroke-width="2" points="'+a.map(function(v,k){return x(k)+","+y(v)}).join(" ")+'"/><circle cx="'+x(a.length-1)+'" cy="'+y(a[a.length-1])+'" r="3" fill="'+(out(c,a[a.length-1])?"#dc2626":"var(--pri)")+'"/></svg>'}
+function tmF(i){var p=S[i];return '<div class="sec"><h4>Registro de toma de muestra</h4><div class="note" style="margin:0 0 8px">Responsable: '+RS.tom[0]+' – DNI '+RS.tom[1]+'. Tubos: '+esc(tubos(p))+'</div><label class="ck"><input type="checkbox" id="t_id">Paciente identificado con 2 datos (nombre y DNI)</label><label class="ck"><input type="checkbox" id="t_ro">Tubos rotulados con N.º de orden y DNI</label><div class="fld" style="margin-top:8px"><span>Ayuno (requerido: '+ayu(p)+')</span><div class="row"><select id="t_ay"><option>Confirmado con el paciente</option><option>No confirmado</option><option>No requerido</option></select></div></div><div class="fld"><span>Sitio de punción</span><div class="row"><select id="t_si"><option>Vena antecubital (pliegue del codo)</option><option>Vena del dorso de la mano</option><option>Otro sitio</option></select></div></div><div class="fld"><span>Intentos de punción</span><div class="row"><input type="number" id="t_in" min="1" max="5" value="1"></div></div><div class="fld"><span>Volumen por tubo (mL)</span><div class="row"><input type="number" id="t_vo" min="1" max="10" step="any" value="4"></div></div><div class="fld"><span>Condición de la muestra</span><div class="row"><select id="t_co"><option>Adecuada: volumen suficiente, sin hemólisis ni lipemia</option><option>Hemolizada</option><option>Lipémica</option><option>Volumen insuficiente</option></select></div></div><div class="fld"><span>Observaciones</span><div class="row"><input type="text" id="t_ob" placeholder="Opcional"></div></div><div class="note" id="tmm"></div></div>'}
+function tom(i){if(!can(1))return;var p=S[i],g=function(k){return document.getElementById(k)},m=g("tmm");
+if(!g("t_id").checked){m.textContent="Confirma la identificación del paciente con 2 datos.";return}
+if(!g("t_ro").checked){m.textContent="Confirma que los tubos están rotulados.";return}
+var it=parseInt(g("t_in").value),vo=g("t_vo").value;if(!(it>=1)||!(+vo>0)){m.textContent="Revisa los intentos y el volumen.";return}
+var co=g("t_co").value;
+step(p,1,Date.now(),{idv:1,rot:1,ayc:g("t_ay").value,cond:co,sitio:g("t_si").value,int:it,vol:vo,obs:g("t_ob").value.trim()||"Sin incidentes durante la extracción"});
+if(co.indexOf("Adecuada")!=0){INC.unshift({id:Date.now(),t:Date.now(),tipo:"Muestra rechazada o hemolizada",area:"Toma de muestra",ord:p.ord,desc:"Condición de la muestra: "+co,acc:"Evaluar nueva extracción",resp:RS.tom[0],est:"Abierta"});saveI()}
+save();render();openP(i)}
+function msg(t,h){var m=document.getElementById("am")||document.getElementById("pm");if(m){if(h)m.innerHTML=t;else m.textContent=t}}
+function mkpdf(p){CS=p.sx;var J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;var d=new J({unit:"mm",format:"a4"}),x=p.x[4],cf=conf(p),ver=vcode(p),y;
+d.setFillColor(29,78,216);d.rect(0,0,210,30,"F");d.setTextColor(255);d.setFont("helvetica","bold");d.setFontSize(22);d.text("FIBONACCI",14,14);d.setFontSize(9);d.setFont("helvetica","normal");d.text("LABORATORIO CLÍNICO",14,20);d.text(LAB.dir+" · Tel. "+LAB.tel+" · "+LAB.ruc,14,25);
+try{var g=qrcode(0,"M");g.addData("FIBONACCI|"+p.ord+"|DNI "+p.d+"|"+fmt(x.fecha)+"|VER "+ver);g.make();var n=g.getModuleCount(),c=22/(n+4);d.setFillColor(255,255,255);d.rect(172,4,24,24,"F");d.setFillColor(0,0,0);for(var a=0;a<n;a++)for(var b=0;b<n;b++)if(g.isDark(a,b))d.rect(173+(b+2)*c,5+(a+2)*c,c+.05,c+.05,"F")}catch(e){}
+d.setTextColor(20);d.setFont("helvetica","bold");d.setFontSize(14);d.text("INFORME DE RESULTADOS",105,40,{align:"center"});d.setFontSize(10);
+var rows=[["Paciente",p.n],["DNI",p.d],["Edad / sexo",p.nac?edad(p.nac)+" años · "+(p.sx=="F"?"Femenino":"Masculino"):"No registrado"],["N.º de orden",p.ord],["Médico solicitante",p.med||"No registrado"],["Procedencia",p.pro||"Particular"],["Diagnóstico presuntivo",p.dx||"No registrado"],["Toma de muestra",fmt(p.x[1].ext)],["Emisión",fmt(x.fecha)]];y=50;
+rows.forEach(function(r){d.setFont("helvetica","bold");d.text(r[0]+":",14,y);d.setFont("helvetica","normal");d.text(String(r[1]),52,y);y+=6});
+y+=4;d.setFillColor(230,236,250);d.rect(14,y-5,182,7,"F");d.setFont("helvetica","bold");d.text("Análisis",16,y);d.text("Resultado",80,y);d.text("Referencia",125,y);d.text("Estado",170,y);y+=8;
+p.t.forEach(function(c){var e=stt(p,c),bad=e!="Normal";d.setFont("helvetica","normal");d.setTextColor(20,20,20);d.text(T[c][0],16,y);if(bad){d.setTextColor(180,30,30);d.setFont("helvetica","bold")}d.text(nf(p.v[c])+" "+T[c][1],80,y);d.setTextColor(20,20,20);d.setFont("helvetica","normal");d.text(rng(c),125,y);if(bad){d.setTextColor(180,30,30);d.setFont("helvetica","bold")}d.text(e,170,y);d.setTextColor(20,20,20);y+=7});
+var bd=p.t.filter(function(c){return stt(p,c)!="Normal"});y+=4;d.setFont("helvetica","bold");d.text("Interpretación",14,y);y+=6;d.setFont("helvetica","normal");
+d.text(d.splitTextToSize(bd.length?"Valores fuera del rango de referencia: "+bd.map(function(c){return T[c][0]+" ("+stt(p,c).toLowerCase()+")"}).join(", ")+". Se recomienda correlación clínica y evaluación médica.":"Todos los resultados se encuentran dentro de los valores de referencia.",182),14,y);y+=16;
+d.setFontSize(9);d.text(d.splitTextToSize("Método: "+p.x[3].met+".",182),14,y);y+=10;d.text("Custodia digital: "+cf.ok+" de "+cf.n+" controles cumplidos · 5 etapas con responsable identificado.",14,y);
+d.setDrawColor(0,0,0);d.line(30,250,95,250);d.setFont("helvetica","bold");d.setFontSize(10);d.text(x.nom,62,255,{align:"center"});d.setFont("helvetica","normal");d.setFontSize(9);d.text(x.col+" · Profesional que valida",62,260,{align:"center"});
+d.setDrawColor(29,78,216);d.setLineWidth(.8);d.circle(150,248,16);d.setLineWidth(.3);d.circle(150,248,13.5);d.setTextColor(29,78,216);d.setFont("helvetica","bold");d.setFontSize(8);d.text("FIBONACCI",150,242,{align:"center"});d.setFontSize(10);d.text("VALIDADO",150,249,{align:"center"});d.setFontSize(6);d.text(fmt(x.fecha).slice(0,10),150,254,{align:"center"});
+d.setTextColor(90,90,90);d.setFont("helvetica","normal");d.setFontSize(8);d.text("Código de verificación: "+p.ord+" · VER "+ver+" — verifíquelo en la app de FIBONACCI.",14,285);return d}
+async function pdf(i){var p=S[i],d=mkpdf(p);if(!d){msg("No se pudo preparar el PDF. Revisa tu conexión e inténtalo de nuevo.");return}
+var fn="Informe-"+p.ord+".pdf";
+try{var dl=window.claude&&await claude.use("downloads");if(dl){await dl.save({filename:fn,data:d.output("blob")});msg("PDF listo. Ya puedes enviarlo por WhatsApp.");return}d.save(fn)}
+catch(e){if(e&&e.code=="declined")return;try{d.save(fn)}catch(z){msg("No se pudo descargar aquí. Abre la página en tu navegador.")}}}
+function wsp(i,own){var p=S[i],nm=(p.n.split(",")[1]||p.n).trim(),
+tx="*FIBONACCI · Laboratorio Clínico*\nHola, "+nm+". Tus resultados ("+p.ord+") ya están listos:\n"+p.t.map(function(c){return "• "+T[c][0]+": "+nf(p.v[c])+" "+T[c][1]+" ("+stt(p,c)+")"}).join("\n")+"\nValidado por "+p.x[4].nom+". Te enviamos tu informe en PDF.",
+u="https://wa.me/"+(own?"":"51"+p.tel.replace(/\D/g,""))+"?text="+encodeURIComponent(tx),w=null;
+try{navigator.clipboard.writeText(tx)}catch(e){}
+try{w=window.open(u,"_blank")}catch(e){}
+if(w){msg("Abriendo WhatsApp…");return}
+if(navigator.share){navigator.share({text:tx}).catch(function(){});return}
+msg('Si WhatsApp no se abre, <a href="'+u+'" target="_blank" rel="noopener" style="color:var(--pri)">toca aquí</a>. El mensaje quedó copiado.',1)}
+var US=[{r:"rec",n:RS.rec[0],rol:"Recepción",ph:"BEB89E0B"},{r:"tom",n:RS.tom[0],rol:"Toma de muestra",ph:"BEB6FD4B"},{r:"pro",n:RS.res[0],rol:"Profesional de laboratorio",ph:"BEB78D8B"},{r:"ges",n:RS.ges[0],rol:"Gestión",ph:"BEB45C0B"}],
+RN={rec:"Recepción",tom:"Toma de muestra",pro:"Profesional de laboratorio",ges:"Gestión"},PM={avi:["rec","ges","pro"],add:["rec","ges"],1:["tom"],2:["tom","pro"],3:["pro"],4:["pro"],ent:["rec","pro"],cer:["ges","pro"]},CU=null;
+try{CU=JSON.parse(sessionStorage.getItem(K+"-u"))}catch(e){}
+function toast(t){var e=document.getElementById("toast");if(!e){e=document.createElement("div");e.id="toast";document.body.appendChild(e)}e.textContent=t;e.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(function(){e.style.display="none"},3800)}
+function can(a){var ok=CU&&PM[a]&&PM[a].indexOf(CU.r)>=0;if(!ok)toast(CU?"🔒 Tu rol ("+CU.rol+") no puede hacer esto. Requiere: "+(PM[a]||[]).map(function(r){return RN[r]}).join(" o ")+".":"🔒 Inicia sesión para continuar.");return ok}
+function ubar(){if(CU&&CU.r=="pac")tab=12;return CU?'<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px"><span>👤 '+esc(CU.n)+' · '+CU.rol+'</span><span><button class="btn cl" onclick="snd()" title="Sonido de alertas">'+(SND?"🔔":"🔕")+'</button> <button class="btn cl" onclick="logout()">Salir</button></span></div>':""}
+function lgShow(){var e=document.getElementById("lg");if(e)e.remove();e=document.createElement("div");e.id="lg";e.innerHTML='<div class="lgc"><b style="font-size:24px;letter-spacing:.14em;color:var(--pri)">FIBONACCI</b><div class="note" style="margin:4px 0 14px">Laboratorio clínico. Cada acción queda registrada a nombre de quien la realiza.</div><div class="box"><h3>Personal del laboratorio</h3><div class="fld"><span>Usuario</span><div class="row"><select id="lu">'+US.map(function(u,k){return '<option value="'+k+'">'+esc(u.n)+' · '+u.rol+'</option>'}).join("")+'</select></div></div><div class="fld"><span>PIN</span><div class="row"><input type="password" id="lp" inputmode="numeric" maxlength="4"><button class="btn" onclick="lgo()">Entrar</button></div></div><div class="note" id="lm"></div></div><button class="btn sec" style="width:100%;margin-top:12px" onclick="pac()">🧑‍⚕️ Soy paciente: ver mis resultados</button></div>';document.body.appendChild(e);document.getElementById("lp").onkeydown=function(ev){if(ev.key=="Enter")lgo()}}
+var LF=0,LU=0;
+function lgo(){var m=document.getElementById("lm"),w=Math.ceil((LU-Date.now())/1e3);if(w>0){m.textContent="Acceso bloqueado. Espera "+w+" s.";return}
+var u=US[document.getElementById("lu").value];if(hsh("fib#"+document.getElementById("lp").value)!=u.ph){LF++;if(LF>=3){LF=0;LU=Date.now()+3e4;m.textContent="3 intentos fallidos. Acceso bloqueado 30 s."}else m.textContent="PIN incorrecto. Intentos restantes: "+(3-LF);document.getElementById("lp").value="";return}LF=0;
+CU={r:u.r,n:u.n,rol:u.rol};try{sessionStorage.setItem(K+"-u",JSON.stringify(CU))}catch(e){}document.body.className="";document.getElementById("lg").remove();tab=0;render()}
+function pac(){CU={r:"pac",n:"Paciente",rol:"Paciente"};document.body.className="pac";document.getElementById("lg").remove();tab=12;render()}
+function logout(){LL=-1;CU=null;try{sessionStorage.removeItem(K+"-u")}catch(e){}document.body.className="";proj(0);closeP();lgShow()}
+var IT;function idle(){clearTimeout(IT);IT=setTimeout(function(){if(CU&&CU.r!="pac"){logout();toast("Sesión cerrada por inactividad.")}},6e5)}
+["click","keydown","touchstart"].forEach(function(n){document.addEventListener(n,idle)});idle();
+if(!CU)lgShow();else if(CU.r=="pac")document.body.className="pac";
+function fd(f){return f.split("-").reverse().join("/")}
+function sd(p,c){var l=(PV[p.d]||[]).filter(function(z){return z.v[c]!=null}).map(function(z){return fd(z.f)});l.push("Hoy");return l}
+function dst(c,v){var t=T[c];return v<t[2]?t[2]-v:v>t[3]?v-t[3]:0}
+function trH(p){CS=p.sx;var h=p.t.filter(function(c){return ser(p,c).length>1}).map(function(c){var a=ser(p,c),ds=sd(p,c),n=a[a.length-1],b=a[a.length-2],d=n-b,pc=Math.round(Math.abs(d)/b*100),u=T[c][1],ok=!out(c,n),
+vr=ok?["okc","✔ Dentro del rango"]:dst(c,n)>dst(c,b)?["risk","⚠ Se aleja del rango"]:["s0","↘ Se acerca al rango"],
+tx=(pc<1?"Se mantiene estable":(d>0?"Subió ":"Bajó ")+nf(+Math.abs(d).toFixed(2))+" "+u+" ("+pc+"%)")+" desde la visita del "+ds[ds.length-2]+".";
+return '<div class="card2"><div class="head" style="margin:0"><b style="margin:0">'+T[c][0]+'</b><span class="chip '+vr[0]+'" style="margin:0">'+vr[1]+'</span></div><div style="display:flex;gap:12px;align-items:center;margin-top:6px"><div style="flex:none">'+spk(c,a)+'<div class="note" style="margin:0;display:flex;justify-content:space-between"><span>Antes</span><span>Hoy</span></div></div><div style="flex:1;font-size:14px">'+a.map(function(v,k){return '<div style="display:flex;justify-content:space-between;gap:8px"><span style="color:var(--mut)">'+ds[k]+'</span><b style="display:inline;margin:0">'+nf(v)+' '+u+'</b></div>'}).join("")+'<div style="margin-top:4px">'+tx+'</div><div style="color:var(--mut)">Rango normal: '+rng(c)+'</div></div></div></div>'}).join("");
+return h?'<div class="sec"><h4>Evolución respecto a visitas anteriores</h4>'+h+'<div class="note">En el gráfico, la banda verde es el rango normal y el punto es el resultado de hoy (rojo si está fuera de rango).</div></div>':""}
+function conf(p){CS=p.sx;var x=p.x,tm=parseFloat(String(x[2].temp).replace(",",".")),tat=(x[4].fecha-p.h[0][0])/6e4,
+it=[["Paciente identificado con 2 datos (nombre y DNI)",x[1].idv!=0],["Ayuno verificado",x[1].ayc!="No confirmado"],["Cadena de frío 2–8 °C ("+x[2].temp+")",tm>=2&&tm<=8],["Muestra íntegra, sin hemólisis ni lipemia",/sin hemólisis/.test(x[1].cond)],["Control interno de calidad conforme",x[3].ci=="Conforme"],["Validado por profesional colegiado",!!x[4].nom],["Resultado en ≤ 4 h desde el registro ("+hm(tat)+")",tat<=240],["Sin incidencias abiertas en la orden",!INC.some(function(z){return z.ord==p.ord&&z.est=="Abierta"})]],ok=it.filter(function(z){return z[1]}).length;
+return{it:it,ok:ok,n:it.length,pc:Math.round(ok/it.length*100)}}
+function vgo(i){var p=S[i];closeP();go(11);document.getElementById("vi").value=p.ord+" · VER "+vcode(p);chk()}
+function vtam(ok){var p=S.filter(function(z){return z.s==4})[0];if(!p)return;var v=vcode(p);if(!ok)v=v.slice(0,-1)+(v.slice(-1)=="0"?"1":"0");document.getElementById("vi").value=p.ord+" · VER "+v;chk()}
+function sel(p){var c=conf(p),ok=c.pc==100,co=ok?["#047857","#34d399"]:c.pc>=75?["#b45309","#fbbf24"]:["#b91c1c","#f87171"],
+sh=["Identidad","Ayuno","Cadena de frío","Muestra íntegra","Control interno","Validación","Tiempo ≤ 4 h","Sin incidencias"],
+nd=["Registro","Toma de muestra","Transporte","Análisis","Validación"],
+dt=["Orden generada","Muestra extraída","Cadena de frío "+p.x[2].temp,"Control interno "+String(p.x[3].ci).toLowerCase(),"Resultado liberado"];
+return '<div class="sec"><div class="cert" style="--c1:'+co[0]+';--c2:'+co[1]+'"><div class="ct"><svg width="62" height="62" viewBox="0 0 64 64"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+co[1]+'"/><stop offset="1" stop-color="'+co[0]+'"/></linearGradient></defs><polygon points="32,3 58,18 58,46 32,61 6,46 6,18" fill="url(#hg)" stroke="#fff" stroke-opacity=".6" stroke-width="2"/><path class="ck" d="M20 33l8 8 16-17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="flex:1"><small>CERTIFICADO DE CUSTODIA DIGITAL</small><b>'+(ok?"CUSTODIA ÍNTEGRA":"REVISAR CUSTODIA")+'</b><span>'+c.ok+' de '+c.n+' controles · 5 etapas · 5 responsables</span></div><div class="cp">'+c.pc+'<small>%</small></div></div><div class="cr">'+nd.map(function(n,k){var e=p.h[k],pv=k?Math.round((e[0]-p.h[k-1][0])/6e4):0,ii=ini(e[3]).replace(/\./g,"").slice(0,2);return '<div class="cn" style="animation-delay:'+(k*.18)+'s"><div class="cb">'+ii+'</div><div><b>'+n+'</b><span>'+esc(e[3])+'</span><small>'+fmt(e[0]).slice(11)+(k?" · +"+pv+" min":"")+' · '+dt[k]+'</small></div></div>'}).join("")+'</div><div>'+c.it.map(function(z,k){return '<span class="cc'+(z[1]?"":" no")+'">'+(z[1]?"✔ ":"⚠ ")+sh[k]+'</span>'}).join("")+'</div><div class="cf"><div><small>COMPROBACIÓN</small><span>'+p.ord+' · VER '+vcode(p)+'</span></div><button class="btn sec" style="color:#fff;border-color:#fff;margin-left:auto" onclick="vgo('+S.indexOf(p)+')">🔐 Verificar</button></div></div></div>'}
+function full(i){CS=S[i].sx;var p=S[i],x=p.x[4];return kv("Paciente",[["Nombre",p.n],["DNI",p.d],["Edad / sexo",p.nac?edad(p.nac)+" años · "+(p.sx=="F"?"Femenino":"Masculino"):"No registrado"],["Teléfono",p.tel],["Médico solicitante",p.med||"No registrado"],["Procedencia",p.pro||"Particular"],["Diagnóstico presuntivo",p.dx||"No registrado"],["Orden",p.ord],["Emitido",fmt(x.fecha)],["Validado por",x.nom+" – "+x.col],["Entrega",p.ent?"Entregado "+fmt(p.ent):"Pendiente de entrega"]])+'<div class="tblw"><table><tr><th>Análisis</th><th>Resultado</th><th>Referencia</th><th>Estado</th></tr>'+p.t.map(function(c){var e=stt(p,c);return '<tr><td>'+T[c][0]+'</td><td class="'+(e!="Normal"?"hi":"")+'">'+nf(p.v[c])+' '+T[c][1]+'</td><td>'+rng(c)+'</td><td><span class="chip '+(e=="Normal"?"okc":"risk")+'" style="margin:0">'+e+'</span></td></tr>'}).join("")+'</table></div>'+interp(p)+trH(p)+sel(p)+'<div class="acts"><button class="btn" onclick="openP('+i+');inf('+i+')">📄 Informe formal</button><button class="btn sec" onclick="openP('+i+')">Ver ficha completa</button></div>'}
+function pT(){return '<div class="box search"><h3>🧑‍⚕️ Mis resultados</h3><div class="note" style="margin:0 0 10px">Ingresa con tu DNI y tu fecha de nacimiento. Tus datos de salud son confidenciales y cada ingreso queda registrado.</div><div class="fld"><span>DNI</span><div class="row"><input type="text" id="pd" inputmode="numeric" maxlength="8"></div></div><div class="fld"><span>Fecha de nacimiento</span><div class="row"><input type="date" id="pn"></div></div><div class="row"><button class="btn" onclick="pgo()">Ver mis resultados</button><button class="btn sec" onclick="pdemo()">Ejemplo</button></div></div><div id="pv"></div>'}
+function pdemo(){var p=S.filter(function(z){return z.s==4&&PV[z.d]})[0];if(!p)return;document.getElementById("pd").value=p.d;document.getElementById("pn").value=p.nac;pgo()}
+function pgo(){var d=document.getElementById("pd").value.trim(),n=document.getElementById("pn").value,v=document.getElementById("pv"),i=-1;
+S.forEach(function(p,k){if(p.d==d&&p.nac&&p.nac==n&&p.s==4)i=k});
+if(i<0){v.innerHTML='<div class="alert bad">No encontramos resultados listos con esos datos. Revisa tu DNI y tu fecha de nacimiento.</div>';return}
+CS=S[i].sx;S[i].acc=(S[i].acc||[]).concat(Date.now());save();var p=S[i],nm=(p.n.split(",")[1]||p.n).trim(),bad=p.t.filter(function(c){return stt(p,c)!="Normal"});
+v.innerHTML='<div class="box"><h3 style="font-size:20px">Hola, '+esc(nm)+'</h3><div class="alert '+(bad.length?"bad":"good")+'" style="font-size:17px">'+(bad.length?"⚠ "+bad.length+" valor(es) fuera del rango. Coméntalo con tu médico.":"✅ Todos tus resultados están dentro de lo esperado.")+'</div>'+p.t.map(function(c){var e=stt(p,c),t=T[c];return '<div class="card2"><div class="head" style="margin:0"><b style="margin:0;font-size:17px">'+t[0]+'</b><span class="chip '+(e=="Normal"?"okc":"risk")+'" style="margin:0">'+e+'</span></div><div style="font-size:28px;font-weight:800;color:'+(e=="Normal"?"var(--okt)":"var(--badt)")+'">'+nf(p.v[c])+' <span style="font-size:15px;font-weight:600">'+t[1]+'</span></div><div style="font-size:14px;color:var(--mut)">'+(e=="Normal"?"Está dentro del rango normal":"Está "+(p.v[c]>t[3]?"por encima":"por debajo")+" del rango normal")+' ('+rng(c)+')</div></div>'}).join("")+(bad.length?'<div class="sec"><h4>Preguntas para tu médico</h4>'+bad.map(function(c){return '<div style="font-size:14px;margin-top:4px">• ¿Por qué mi resultado de '+T[c][0].toLowerCase()+' está '+(p.v[c]>T[c][3]?"alto":"bajo")+' y debo repetir el examen?</div>'}).join("")+'</div>':"")+trH(p)+sel(p)+'<div class="acts"><button class="btn" onclick="openP('+i+');inf('+i+')">📄 Mi informe oficial</button><button class="btn" onclick="pdf('+i+')">⬇ Descargar PDF</button><button class="btn sec" onclick="wsp('+i+',1)">💬 WhatsApp</button><button class="btn sec" onclick="document.body.style.fontSize=document.body.style.fontSize?\'\':\'20px\'">🔠 Letra grande</button></div><div class="note" id="pm">Este resumen no reemplaza la consulta con tu médico.</div></div>'}
+function wa(i){var p=S[i],tx="FIBONACCI Laboratorio · "+p.ord+"\n"+p.t.map(function(c){return T[c][0]+": "+nf(p.v[c])+" "+T[c][1]+" ("+stt(p,c)+")"}).join("\n"),m=document.getElementById("pm");
+if(navigator.share)navigator.share({text:tx}).catch(function(){});else try{navigator.clipboard.writeText(tx).then(function(){m.textContent="Resultados copiados. Pégalos en WhatsApp."})}catch(e){m.textContent=tx}}
+document.getElementById("modal").onclick=function(e){if(e.target.id=="modal")closeP()};
+render();
+</script>
+<script>
+(function(){var b=document.createElement("div");b.id="fbst";b.style.cssText="position:fixed;left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:9999;font:12px system-ui,sans-serif;padding:5px 10px;border-radius:99px;background:var(--card);color:var(--tx);border:1px solid var(--line);max-width:90%";b.textContent="☁ Conectando…";document.body.appendChild(b);window.fbst=function(t){b.textContent=t};setTimeout(function(){if(!window.__fb)fbst("☁ No cargó Firebase: el navegador bloqueó el archivo")},8000)})();
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getFirestore,doc,getDoc,setDoc}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyBYDTLSAm8Sii5Zxtg7YfMS_4uAlIu1lBA",authDomain:"fibonacci-laboratorio.firebaseapp.com",projectId:"fibonacci-laboratorio",storageBucket:"fibonacci-laboratorio.firebasestorage.app",messagingSenderId:"587152996274",appId:"1:587152996274:web:90e31c0f78c37178acd6ab"});
+const ref=doc(getFirestore(app),"laboratorio","estado");
+window.__fb=1;let ready=false,tm=null;fbst("☁ Firebase cargado, leyendo…");
+const cur=()=>({s:JSON.stringify(S),inc:JSON.stringify(INC),tx:JSON.stringify(TX)});
+function aviso(m){try{toast(m)}catch(e){console.warn(m)}}
+async function push(){if(!ready)return;try{await setDoc(ref,{...cur(),t:Date.now()});fbst("☁ Guardado en la nube ✔")}catch(e){console.error(e);fbst("☁ Error al guardar: "+(e.code||e.message))}}
+function prog(){clearTimeout(tm);tm=setTimeout(push,800)}
+["save","saveI","saveT"].forEach(n=>{const f=window[n];window[n]=function(){const r=f.apply(this,arguments);prog();return r}});
+(async()=>{try{
+const sn=await getDoc(ref);
+if(sn.exists()){const r=sn.data(),l=cur();
+if(r.s!==l.s||r.inc!==l.inc||r.tx!==l.tx){
+if(sessionStorage.getItem("fb-rl")){ready=true;if(window.__mig)prog();return}
+sessionStorage.setItem("fb-rl","1");
+localStorage.setItem(K,r.s);localStorage.setItem(K+"-inc",r.inc);localStorage.setItem(K+"-tests",r.tx);
+location.reload();return}
+sessionStorage.removeItem("fb-rl");ready=true;if(window.__mig)prog();fbst("☁ Conectado ✔")}
+else{ready=true;await push()}
+}catch(e){console.error(e);fbst("☁ Error al leer: "+(e.code||e.message))}})();
+</script>
+</body>
+</html>
